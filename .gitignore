@@ -1,0 +1,19 @@
+# Fichiers de travail qui ne doivent pas partir sur GitHub
+
+node_modules/
+.publication/
+.netlify/
+
+# Contient un code d'acces, regenere a chaque demarrage
+LIEN-TELEPHONE.txt
+
+# Copie de securite creee avant chaque enregistrement
+data/contenu.js.precedent
+
+# Fichiers Windows
+Thumbs.db
+desktop.ini
+
+# Reglages de l'outil de developpement
+.claude/
+

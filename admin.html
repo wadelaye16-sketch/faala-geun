@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace de gestion — FAALA GEUN</title>
+  <meta name="theme-color" content="#0B4D3B">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+<header class="tete">
+  <div class="tete__gauche">
+    <img src="assets/icons/icon.svg" alt="" width="34" height="34">
+    <div>
+      <strong>Espace de gestion</strong>
+      <small>FAALA GEUN</small>
+    </div>
+  </div>
+  <div class="tete__droite">
+    <span id="etat-dossier" class="pastille pastille--off">Dossier non connecté</span>
+    <a class="bouton bouton--fantome" href="index.html" target="_blank">Voir l'app ↗</a>
+    <button id="btn-enregistrer" class="bouton bouton--or">💾 Enregistrer</button>
+    <button id="btn-publier" class="bouton bouton--publier">🌍 Publier en ligne</button>
+  </div>
+</header>
+
+<div class="mise-en-page">
+
+  <nav class="menu" aria-label="Sections">
+    <button class="menu__item actif" data-section="site">
+      <span class="menu__ico">🏠</span> Informations du site
+    </button>
+    <button class="menu__item" data-section="videos">
+      <span class="menu__ico">🎬</span> Vidéos <span class="compteur" data-compteur="videos">0</span>
+    </button>
+    <button class="menu__item" data-section="audios">
+      <span class="menu__ico">🎵</span> Musiques <span class="compteur" data-compteur="audios">0</span>
+    </button>
+    <button class="menu__item" data-section="evenements">
+      <span class="menu__ico">📅</span> Événements <span class="compteur" data-compteur="evenements">0</span>
+    </button>
+    <button class="menu__item" data-section="actualites">
+      <span class="menu__ico">📰</span> Actualités <span class="compteur" data-compteur="actualites">0</span>
+    </button>
+
+    <div class="menu__pied">
+      <p class="aide-mini">Remplis les formulaires, puis clique sur <strong>💾 Enregistrer</strong>
+      en haut à droite. Tes fichiers vidéo et audio sont rangés automatiquement au bon endroit.</p>
+    </div>
+  </nav>
+
+  <main id="panneau" class="panneau"></main>
+</div>
+
+<!-- Formulaire d'ajout / modification -->
+<div id="fenetre" class="fenetre" hidden>
+  <div class="fenetre__fond" data-fermer></div>
+  <form id="formulaire" class="fenetre__boite" novalidate>
+    <div class="fenetre__tete">
+      <h2 id="fenetre-titre">Ajouter</h2>
+      <button type="button" class="bouton-ico" data-fermer aria-label="Fermer">✕</button>
+    </div>
+    <div id="fenetre-champs" class="fenetre__corps"></div>
+    <div class="fenetre__pied">
+      <button type="button" class="bouton bouton--ligne" data-fermer>Annuler</button>
+      <button type="submit" class="bouton bouton--or">Valider</button>
+    </div>
+  </form>
+</div>
+
+<div id="message" class="message" hidden></div>
+
+<script src="data/contenu.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

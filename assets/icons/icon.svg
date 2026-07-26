@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#106B52"/>
+      <stop offset="1" stop-color="#063426"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="url(#fond)"/>
+  <g fill="none" stroke="#D4A017" stroke-width="10" stroke-opacity=".55">
+    <circle cx="256" cy="248" r="150"/>
+    <circle cx="256" cy="248" r="118"/>
+  </g>
+  <!-- Minaret stylisé de Touba -->
+  <path d="M256 96c11 0 20 9 20 20 0 9-6 17-14 19v17h-12v-17c-8-2-14-10-14-19 0-11 9-20 20-20z" fill="#F0CE6A"/>
+  <path d="M214 168h84l10 30H204z" fill="#F0CE6A"/>
+  <path d="M204 198h104v148H204z" fill="#F0CE6A" fill-opacity=".92"/>
+  <path d="M232 346v-52c0-13 11-24 24-24s24 11 24 24v52z" fill="#063426"/>
+  <rect x="176" y="346" width="160" height="26" rx="10" fill="#D4A017"/>
+</svg>

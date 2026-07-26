@@ -1,0 +1,11 @@
+# En-têtes HTTP appliqués par Netlify.
+# Sans cette règle, le manifeste est servi comme fichier binaire générique
+# et le bouton « Installer » peut ne pas apparaître sur certains téléphones.
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+
+# Le service worker ne doit jamais être servi depuis un cache périmé,
+# sinon les mises à jour du site mettent des jours à arriver.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate

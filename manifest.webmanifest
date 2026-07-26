@@ -1,0 +1,25 @@
+{
+  "name": "FAALA GEUN — Communauté Mouride",
+  "short_name": "FAALA GEUN",
+  "description": "Vidéos, khassaïdes, événements et actualités de la communauté mouride.",
+  "start_url": "./index.html#/accueil",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B4D3B",
+  "theme_color": "#0B4D3B",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["entertainment", "music", "lifestyle"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Vidéos",     "url": "./index.html#/videos" },
+    { "name": "Musiques",   "url": "./index.html#/musiques" },
+    { "name": "Événements", "url": "./index.html#/evenements" }
+  ]
+}

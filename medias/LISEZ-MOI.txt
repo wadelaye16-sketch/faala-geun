@@ -1,0 +1,20 @@
+DOSSIER DES FICHIERS MEDIAS
+===========================
+
+Depose tes fichiers ici :
+
+  videos/   ->  tes videos au format .mp4
+  audios/   ->  tes musiques et khassaides au format .mp3
+  images/   ->  tes photos de couverture au format .jpg
+
+Ensuite, declare-les dans le fichier  data/contenu.js
+(voir GUIDE.md, section 2).
+
+Exemple : si tu copies "khassaida-vendredi.mp4" dans videos/,
+tu ecris dans contenu.js :
+
+    "fichier": "medias/videos/khassaida-vendredi.mp4"
+
+Formats qui NE FONCTIONNENT PAS dans un navigateur :
+.mkv  .avi  .wmv  .flac  .mov (parfois)
+-> convertis-les en .mp4 / .mp3 avec VLC ou HandBrake.

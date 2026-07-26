@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Réparer — FAALA GEUN</title>
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      display: grid; place-items: center;
+      background: #0B4D3B; color: #fff;
+      font-family: "Segoe UI", system-ui, Arial, sans-serif;
+      padding: 24px;
+    }
+    .boite {
+      background: #fff; color: #1B211F;
+      max-width: 560px; width: 100%;
+      border-radius: 16px; padding: 32px;
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
+    }
+    h1 { font-family: Georgia, serif; margin: 0 0 6px; font-size: 1.5rem; }
+    p { line-height: 1.6; color: #5E6B66; }
+    ul { padding-left: 20px; }
+    li { margin: 7px 0; line-height: 1.5; }
+    .ok { color: #106B52; font-weight: 700; }
+    .ko { color: #B3261E; font-weight: 700; }
+    .bouton {
+      display: inline-block; margin-top: 18px;
+      background: #D4A017; color: #063426;
+      padding: 13px 26px; border-radius: 999px;
+      font-weight: 800; text-decoration: none; font-size: 1rem;
+    }
+    .bouton:hover { background: #F0CE6A; }
+    .attente { color: #5E6B66; }
+  </style>
+</head>
+<body>
+  <div class="boite">
+    <h1>Remise à neuf de l'application</h1>
+    <p>Cette page efface la mémoire du navigateur pour que tu récupères
+       la toute dernière version de l'espace de gestion.</p>
+    <ul id="journal"><li class="attente">Nettoyage en cours…</li></ul>
+    <div id="suite"></div>
+  </div>
+
+<script>
+(async function () {
+  const journal = document.getElementById('journal');
+  const ligne = (texte, genre) => {
+    const li = document.createElement('li');
+    li.className = genre || '';
+    li.textContent = texte;
+    journal.appendChild(li);
+  };
+
+  journal.innerHTML = '';
+
+  // 1. On retire le mode hors connexion
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) await r.unregister();
+    ligne(regs.length
+      ? `Mode hors connexion désactivé (${regs.length} enregistrement retiré).`
+      : 'Aucun mode hors connexion actif.', 'ok');
+  } catch (e) {
+    ligne('Mode hors connexion : ' + e.message, 'ko');
+  }
+
+  // 2. On vide les fichiers gardés en mémoire
+  try {
+    const cles = await caches.keys();
+    for (const k of cles) await caches.delete(k);
+    ligne(cles.length
+      ? `Fichiers en mémoire supprimés (${cles.join(', ')}).`
+      : 'Aucun fichier en mémoire.', 'ok');
+  } catch (e) {
+    ligne('Mémoire : ' + e.message, 'ko');
+  }
+
+  // 3. On vérifie que le serveur d'enregistrement répond
+  let serveur = false;
+  try {
+    const r = await fetch('api/etat', { cache: 'no-store' });
+    const d = await r.json();
+    serveur = d.enregistrementPossible === true;
+  } catch {}
+
+  ligne(serveur
+    ? "Serveur d'enregistrement : actif — tes modifications seront écrites directement."
+    : "Serveur d'enregistrement : INACTIF — relance GESTION.bat.",
+    serveur ? 'ok' : 'ko');
+
+  document.getElementById('suite').innerHTML = serveur
+    ? '<a class="bouton" href="admin.html">Ouvrir l\'espace de gestion →</a>'
+    : '<p class="ko">Ferme cette page, double-clique sur GESTION.bat, puis reviens ici.</p>';
+})();
+</script>
+</body>
+</html>

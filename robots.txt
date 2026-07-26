@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://faala-geun.netlify.app/sitemap.xml

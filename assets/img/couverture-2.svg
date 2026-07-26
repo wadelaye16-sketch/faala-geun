@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0B4D3B"/>
+      <stop offset="1" stop-color="#1A7A5E"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g2)"/>
+  <g fill="#D4A017" fill-opacity=".22">
+    <path d="M120 300V150l40-24v174zM180 300V120l40-24v204zM240 300V180l40-24v144z"/>
+  </g>
+  <g fill="none" stroke="#F0CE6A" stroke-opacity=".65" stroke-width="3" stroke-linecap="round">
+    <path d="M360 250V110l120-26v140"/>
+    <circle cx="345" cy="252" r="16"/>
+    <circle cx="465" cy="226" r="16"/>
+  </g>
+  <text x="320" y="326" text-anchor="middle" fill="#F0CE6A" font-family="Georgia,serif" font-size="24" letter-spacing="3">CONFÉRENCE</text>
+</svg>
