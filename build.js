@@ -62,6 +62,17 @@ function estPrive(complet) {
 
   await copier(RACINE);
 
+  /* Numerote le code de l'espace de gestion avec la date de construction.
+     Sans ca, un telephone peut continuer d'executer une ancienne version
+     gardee en cache et afficher des erreurs deja corrigees. */
+  const version = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+  const pageGestion = path.join(CIBLE, 'admin.html');
+  if (fs.existsSync(pageGestion)) {
+    const html = await fsp.readFile(pageGestion, 'utf8');
+    await fsp.writeFile(pageGestion, html.split('DATE_CONSTRUCTION').join(version), 'utf8');
+    console.log('Espace de gestion numerote : v' + version);
+  }
+
   // Sans index.html, le site serait vide : mieux vaut echouer bruyamment.
   if (!fs.existsSync(path.join(CIBLE, 'index.html'))) {
     console.error('ERREUR : index.html absent de dist/ — publication interrompue.');

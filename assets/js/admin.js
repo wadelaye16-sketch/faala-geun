@@ -353,6 +353,29 @@ function fichierEnBase64(fichier) {
   });
 }
 
+/** Traduit les réponses de GitHub en explications utilisables. */
+function expliquer(code, message) {
+  if (code === 401) {
+    return "Clé refusée (401). Elle est peut-être expirée ou mal recopiée — " +
+           "vérifie qu'il n'y a ni espace ni retour à la ligne au début ou à la fin.";
+  }
+  if (code === 403) {
+    return "Écriture interdite (403). Ta clé n'a pas la permission " +
+           "« Contents : Read and write » sur le projet faala-geun.";
+  }
+  if (code === 404) {
+    return "Projet introuvable (404). C'est presque toujours l'un de ces deux oublis :\n" +
+           "• la clé n'a pas coché le projet faala-geun (Repository access)\n" +
+           "• la permission Contents est restée sur « Read-only » au lieu de « Read and write »\n\n" +
+           "GitHub répond « introuvable » plutôt que « interdit » dans ces cas-là.";
+  }
+  if (code === 409 || code === 422) {
+    return "Conflit (" + code + "). Le contenu a changé entre-temps. " +
+           "Recharge la page et refais ta modification.";
+  }
+  return `${message || 'erreur inconnue'} (code ${code})`;
+}
+
 async function apiGitHub(chemin, options = {}) {
   const r = await fetch(`https://api.github.com/repos/${GH.proprietaire}/${GH.depot}${chemin}`, {
     ...options,
@@ -363,7 +386,11 @@ async function apiGitHub(chemin, options = {}) {
     }
   });
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.message || `erreur ${r.status}`);
+  if (!r.ok) {
+    const e = new Error(expliquer(r.status, d.message));
+    e.code = r.status;
+    throw e;
+  }
   return d;
 }
 
@@ -485,10 +512,9 @@ async function enregistrer() {
       annoncer('✓ Enregistré. Le site public sera à jour dans une minute environ.');
     } catch (e) {
       // Message bloquant : sur un téléphone, une bulle qui s'efface passe inaperçue.
-      alert("L'enregistrement a échoué.\n\n" +
-            'Raison donnée par GitHub :\n' + e.message + "\n\n" +
-            "Si le message parle de « permission » ou de « 403 », ta clé n'a pas " +
-            "le droit d'écrire : refais-la avec Contents → Read and write.");
+      alert("L'enregistrement a échoué.\n\n" + e.message +
+            "\n\nTes modifications ne sont pas perdues : elles restent à l'écran. " +
+            "Corrige la clé, puis clique de nouveau sur Enregistrer.");
       annoncer('Enregistrement impossible : ' + e.message, 'erreur');
     } finally {
       bouton.disabled = false;
