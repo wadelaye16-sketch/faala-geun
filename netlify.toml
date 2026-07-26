@@ -1,0 +1,9 @@
+# Reglages lus automatiquement par Netlify a chaque publication.
+# Grace a ce fichier, il n'y a aucun parametre a saisir a la main.
+
+[build]
+  command = "node build.js"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"

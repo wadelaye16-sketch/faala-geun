@@ -17,3 +17,7 @@ desktop.ini
 # Reglages de l'outil de developpement
 .claude/
 
+
+# Version publique reconstruite a chaque publication
+dist/
+
