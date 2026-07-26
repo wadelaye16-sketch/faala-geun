@@ -237,11 +237,155 @@ async function publier() {
 
 function majEtatServeur() {
   const el = $('#etat-dossier');
-  el.textContent = serveurActif ? '✓ Enregistrement direct' : 'Mode téléchargement';
-  el.className = 'pastille ' + (serveurActif ? 'pastille--on' : 'pastille--off');
-  el.title = serveurActif
-    ? "Tes modifications sont écrites directement dans le dossier de l'application."
-    : "Ouvre l'interface avec GESTION.bat pour enregistrer directement.";
+  if (serveurActif) {
+    el.textContent = '✓ Enregistrement direct';
+    el.title = "Tes modifications sont écrites dans le dossier de l'application, sur cet ordinateur.";
+  } else if (modeGitHub) {
+    el.textContent = '🌍 En ligne';
+    el.title = "Tes modifications partent sur internet : le site public se met à jour tout seul.";
+  } else {
+    el.textContent = 'Mode téléchargement';
+    el.title = "Ouvre l'interface avec GESTION.bat pour enregistrer directement.";
+  }
+  el.className = 'pastille ' + (serveurActif || modeGitHub ? 'pastille--on' : 'pastille--off');
+}
+
+/** Écran de connexion affiché en ligne tant qu'aucun jeton valide n'est enregistré. */
+function demanderJeton(messageErreur) {
+  document.querySelector('.mise-en-page').innerHTML = `
+    <div class="panneau" style="grid-column:1/-1">
+      <div class="fiche" style="display:block; padding:26px; max-width:620px; margin:0 auto">
+        <h1 style="margin-top:0">Espace de gestion en ligne</h1>
+        <p style="color:var(--texte-doux)">
+          Pour modifier ton site depuis ce téléphone, colle ci-dessous ta clé personnelle GitHub.
+          Elle reste enregistrée sur cet appareil : tu ne la saisiras qu'une fois.
+        </p>
+        ${messageErreur ? `<p class="alerte-fichier">${esc(messageErreur)}</p>` : ''}
+        <div class="champ">
+          <label for="saisie-jeton">Clé personnelle</label>
+          <input type="text" id="saisie-jeton" placeholder="github_pat_..." autocomplete="off"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+        <button id="valider-jeton" class="bouton bouton--or">Se connecter</button>
+
+        <details style="margin-top:22px">
+          <summary style="cursor:pointer; font-weight:700">Je n'ai pas encore de clé</summary>
+          <ol style="color:var(--texte-doux); font-size:.92rem; line-height:1.7; padding-left:20px">
+            <li>Ouvre <a href="https://github.com/settings/personal-access-tokens/new"
+                target="_blank" rel="noopener">cette page GitHub</a> (connecte-toi si besoin).</li>
+            <li><strong>Token name</strong> : écris <code>FAALA GEUN</code></li>
+            <li><strong>Expiration</strong> : choisis <code>No expiration</code></li>
+            <li><strong>Repository access</strong> : coche <code>Only select repositories</code>,
+                puis choisis <code>faala-geun</code></li>
+            <li><strong>Permissions</strong> → <em>Repository permissions</em> →
+                ligne <code>Contents</code> → mets <code>Read and write</code></li>
+            <li>Bouton vert <strong>Generate token</strong>, puis copie la clé affichée
+                et colle-la ci-dessus.</li>
+          </ol>
+          <p style="color:var(--texte-doux); font-size:.88rem">
+            Cette clé ne donne accès qu'à ce seul projet. Si tu perds ton téléphone,
+            tu peux la supprimer depuis GitHub et elle cesse aussitôt de fonctionner.</p>
+        </details>
+      </div>
+    </div>`;
+
+  $('#valider-jeton').onclick = async () => {
+    const v = $('#saisie-jeton').value.trim();
+    if (!v) return;
+    definirJeton(v);
+    $('#valider-jeton').disabled = true;
+    $('#valider-jeton').textContent = 'Vérification…';
+    if (await verifierJeton()) location.reload();
+    else {
+      definirJeton('');
+      demanderJeton("Cette clé ne fonctionne pas, ou elle n'a pas le droit d'écrire. Reprends les étapes ci-dessous.");
+    }
+  };
+}
+
+/* ------------------------------------------------------------
+   Mode en ligne : écriture directe sur GitHub
+
+   Utilisé quand l'interface est ouverte depuis le site public
+   (donc sans serveur local) : depuis un téléphone, en 4G,
+   n'importe où. Netlify republie tout seul ensuite.
+   ------------------------------------------------------------ */
+
+const GH = {
+  proprietaire: 'wadelaye16-sketch',
+  depot: 'faala-geun',
+  branche: 'main'
+};
+
+/** Vrai quand on travaille via GitHub (pas de serveur local disponible). */
+let modeGitHub = false;
+
+function jeton() {
+  try { return localStorage.getItem('gh-jeton') || ''; } catch { return ''; }
+}
+
+function definirJeton(v) {
+  try { v ? localStorage.setItem('gh-jeton', v) : localStorage.removeItem('gh-jeton'); } catch {}
+}
+
+/** Encode du texte UTF-8 en base64, comme l'exige l'API GitHub. */
+function enBase64(texte) {
+  const octets = new TextEncoder().encode(texte);
+  let binaire = '';
+  for (const o of octets) binaire += String.fromCharCode(o);
+  return btoa(binaire);
+}
+
+/** Encode un fichier binaire (audio, image, vidéo) en base64. */
+function fichierEnBase64(fichier) {
+  return new Promise((ok, ko) => {
+    const l = new FileReader();
+    l.onload = () => ok(String(l.result).split(',')[1]);
+    l.onerror = () => ko(new Error('Lecture du fichier impossible'));
+    l.readAsDataURL(fichier);
+  });
+}
+
+async function apiGitHub(chemin, options = {}) {
+  const r = await fetch(`https://api.github.com/repos/${GH.proprietaire}/${GH.depot}${chemin}`, {
+    ...options,
+    headers: {
+      'Authorization': `Bearer ${jeton()}`,
+      'Accept': 'application/vnd.github+json',
+      ...(options.headers || {})
+    }
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.message || `erreur ${r.status}`);
+  return d;
+}
+
+/** Écrit (ou remplace) un fichier dans le dépôt. */
+async function ecrireSurGitHub(chemin, contenuBase64, message) {
+  let sha;
+  try {
+    const actuel = await apiGitHub(`/contents/${chemin}?ref=${GH.branche}`);
+    sha = actuel.sha;                       // absent si le fichier est nouveau
+  } catch {}
+
+  return apiGitHub(`/contents/${chemin}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message,
+      content: contenuBase64,
+      branch: GH.branche,
+      ...(sha ? { sha } : {})
+    })
+  });
+}
+
+/** Vérifie que le jeton fonctionne et donne bien le droit d'écrire. */
+async function verifierJeton() {
+  if (!jeton()) return false;
+  try {
+    const d = await apiGitHub('');
+    return d.permissions ? d.permissions.push === true : true;
+  } catch { return false; }
 }
 
 /** Envoie un fichier vidéo / audio / image au serveur, qui le range. */
@@ -306,7 +450,26 @@ async function enregistrer() {
     return;
   }
 
-  // 2. Sinon (page ouverte sans le serveur) : téléchargement du fichier.
+  // 2. Mode en ligne : on écrit dans le dépôt, le site se republie seul.
+  if (modeGitHub) {
+    bouton.disabled = true;
+    bouton.textContent = 'Enregistrement…';
+    try {
+      await ecrireSurGitHub('data/contenu.js', enBase64(texte),
+        'Mise a jour du contenu depuis l espace de gestion');
+      modifie = false;
+      try { localStorage.removeItem('touba-brouillon'); } catch {}
+      annoncer('✓ Enregistré. Le site public sera à jour dans une minute environ.');
+    } catch (e) {
+      annoncer('Enregistrement impossible : ' + e.message, 'erreur');
+    } finally {
+      bouton.disabled = false;
+      bouton.textContent = '💾 Enregistrer';
+    }
+    return;
+  }
+
+  // 3. Sinon (page ouverte sans serveur ni jeton) : téléchargement du fichier.
   telecharger(texte);
   modifie = false;
   annoncer("Fichier téléchargé. Pour enregistrer directement la prochaine fois, " +
@@ -464,8 +627,9 @@ function brancherChampsMedia(conf) {
       const apercu = document.getElementById('apercu-' + c.cle);
       apercu.hidden = false;
 
+      const poids = (f.size / 1048576).toFixed(1);
+
       if (serveurActif) {
-        const poids = (f.size / 1048576).toFixed(1);
         apercu.textContent = `Transfert de ${f.name} (${poids} Mo)…`;
         bouton.disabled = true;
         try {
@@ -477,6 +641,28 @@ function brancherChampsMedia(conf) {
         } finally {
           bouton.disabled = false;
         }
+
+      } else if (modeGitHub) {
+        // GitHub refuse les gros fichiers : mieux vaut prévenir que planter.
+        if (f.size > 24 * 1048576) {
+          apercu.innerHTML = `<span class="alerte-fichier">Fichier trop lourd (${poids} Mo).
+            Au-delà de 24 Mo, héberge-le ailleurs et colle son lien dans le champ ci-dessus.</span>`;
+          champTexte.value = '';
+          return;
+        }
+        apercu.textContent = `Envoi de ${f.name} (${poids} Mo)… cela peut prendre du temps en 4G.`;
+        bouton.disabled = true;
+        try {
+          const b64 = await fichierEnBase64(f);
+          await ecrireSurGitHub(chemin, b64, 'Ajout du media ' + nettoyerNom(f.name));
+          apercu.innerHTML = `✓ <strong>${esc(f.name)}</strong> envoyé (${poids} Mo)`;
+        } catch (e) {
+          apercu.innerHTML = `<span class="alerte-fichier">Envoi impossible : ${esc(e.message)}</span>`;
+          champTexte.value = '';
+        } finally {
+          bouton.disabled = false;
+        }
+
       } else {
         aCopier.set(chemin, f.name);
         apercu.innerHTML = `⚠️ Copie toi-même <strong>${esc(f.name)}</strong> dans le dossier
@@ -606,8 +792,22 @@ $('#btn-publier').addEventListener('click', publier);
   } catch {}
 
   serveurActif = await testerServeur();
+
+  // Pas de serveur local et page servie par internet : on passe par GitHub.
+  if (!serveurActif && location.protocol.startsWith('http')) {
+    if (!(await verifierJeton())) { demanderJeton(); return; }
+    modeGitHub = true;
+  }
+
   majEtatServeur();
   afficherSection('site');
+
+  // En ligne, la publication est automatique : le bouton n'a plus lieu d'être.
+  if (modeGitHub) {
+    $('#btn-publier').hidden = true;
+    annoncer("Connecté. Tes modifications mettront le site public à jour toutes seules.");
+    return;
+  }
 
   // Sans compte Netlify autorisé, la publication en un clic est impossible.
   const bp = $('#btn-publier');

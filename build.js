@@ -18,11 +18,13 @@ const path = require('path');
 const RACINE = __dirname;
 const CIBLE = path.join(RACINE, 'dist');
 
-/** Ne part jamais en ligne. */
+/* Ne part jamais en ligne.
+   L'espace de gestion (admin.html), lui, EST publie : c'est ce qui permet
+   de modifier le site depuis un telephone. Il est inutilisable sans la
+   cle personnelle GitHub, qui n'est stockee que sur l'appareil du gerant. */
 const PRIVE = [
   'dist', 'node_modules', '.git', '.github', '.claude', '.netlify', '.publication',
-  'admin.html', 'reparer.html', 'serveur.js', 'build.js',
-  'assets/css/admin.css', 'assets/js/admin.js',
+  'reparer.html', 'serveur.js', 'build.js',
   'data/contenu.js.precedent',
   'GUIDE.md', 'LIEN-TELEPHONE.txt', '.gitignore', 'netlify.toml'
 ];
@@ -67,7 +69,7 @@ function estPrive(complet) {
   }
 
   // Verification : aucun outil local ne doit se retrouver en ligne.
-  const interdits = ['admin.html', 'serveur.js', 'reparer.html', 'assets/js/admin.js'];
+  const interdits = ['serveur.js', 'reparer.html', 'build.js'];
   const fuites = interdits.filter(f => fs.existsSync(path.join(CIBLE, f)));
   if (fuites.length) {
     console.error('ERREUR : fichiers prives dans dist/ : ' + fuites.join(', '));
