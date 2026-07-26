@@ -1,0 +1,48 @@
+# Publication automatique de FAALA GEUN
+#
+# Se declenche a chaque modification du contenu (depuis le telephone,
+# l'ordinateur, ou GitHub directement) : prepare la version publique
+# puis l'envoie sur Netlify.
+#
+# Pourquoi ici et pas sur Netlify : le plan gratuit de Netlify n'inclut
+# aucune minute de construction, alors que GitHub les offre sans limite
+# aux projets publics.
+
+name: Publier le site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # permet aussi de relancer a la main
+
+# Une seule publication a la fois : si deux enregistrements se suivent,
+# seul le plus recent part en ligne.
+concurrency:
+  group: publication
+  cancel-in-progress: true
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Preparer la version publique
+        run: node build.js
+
+      - name: Envoyer sur Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 69c2c541-97d5-45da-b394-f530562b8c68
+        run: |
+          npx --yes netlify-cli@27 deploy \
+            --prod \
+            --dir dist \
+            --site "$NETLIFY_SITE_ID" \
+            --message "Publication depuis GitHub : ${{ github.event.head_commit.message }}"
