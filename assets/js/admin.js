@@ -252,6 +252,13 @@ function majEtatServeur() {
 
 /** Écran de connexion affiché en ligne tant qu'aucun jeton valide n'est enregistré. */
 function demanderJeton(messageErreur) {
+  // Tant qu'on n'est pas connecté, ces boutons n'ont aucun sens :
+  // les laisser visibles laisse croire que l'enregistrement est possible.
+  $('#btn-enregistrer').hidden = true;
+  $('#btn-publier').hidden = true;
+  $('#etat-dossier').textContent = 'Non connecté';
+  $('#etat-dossier').className = 'pastille pastille--off';
+
   document.querySelector('.mise-en-page').innerHTML = `
     <div class="panneau" style="grid-column:1/-1">
       <div class="fiche" style="display:block; padding:26px; max-width:620px; margin:0 auto">
@@ -298,7 +305,7 @@ function demanderJeton(messageErreur) {
     if (await verifierJeton()) location.reload();
     else {
       definirJeton('');
-      demanderJeton("Cette clé ne fonctionne pas, ou elle n'a pas le droit d'écrire. Reprends les étapes ci-dessous.");
+      demanderJeton(motifRefusJeton || "Cette clé ne fonctionne pas. Reprends les étapes ci-dessous.");
     }
   };
 }
@@ -379,13 +386,29 @@ async function ecrireSurGitHub(chemin, contenuBase64, message) {
   });
 }
 
-/** Vérifie que le jeton fonctionne et donne bien le droit d'écrire. */
+/** Dernier motif de refus de la clé, pour l'afficher à l'utilisateur. */
+let motifRefusJeton = '';
+
+/** Vérifie que la clé fonctionne ET qu'elle donne vraiment le droit d'écrire. */
 async function verifierJeton() {
+  motifRefusJeton = '';
   if (!jeton()) return false;
   try {
     const d = await apiGitHub('');
-    return d.permissions ? d.permissions.push === true : true;
-  } catch { return false; }
+    // Une clé en lecture seule passerait la première étape puis échouerait
+    // au moment d'enregistrer : autant la refuser tout de suite.
+    if (!d.permissions || d.permissions.push !== true) {
+      motifRefusJeton = "Cette clé peut lire le projet mais pas y écrire. " +
+        "Reprends l'étape 5 : Permissions → Contents → « Read and write ».";
+      return false;
+    }
+    return true;
+  } catch (e) {
+    motifRefusJeton = /404/.test(e.message)
+      ? "Clé refusée, ou elle ne donne pas accès au projet faala-geun. Vérifie l'étape 4."
+      : 'Clé refusée par GitHub : ' + e.message;
+    return false;
+  }
 }
 
 /** Envoie un fichier vidéo / audio / image au serveur, qui le range. */
@@ -461,6 +484,11 @@ async function enregistrer() {
       try { localStorage.removeItem('touba-brouillon'); } catch {}
       annoncer('✓ Enregistré. Le site public sera à jour dans une minute environ.');
     } catch (e) {
+      // Message bloquant : sur un téléphone, une bulle qui s'efface passe inaperçue.
+      alert("L'enregistrement a échoué.\n\n" +
+            'Raison donnée par GitHub :\n' + e.message + "\n\n" +
+            "Si le message parle de « permission » ou de « 403 », ta clé n'a pas " +
+            "le droit d'écrire : refais-la avec Contents → Read and write.");
       annoncer('Enregistrement impossible : ' + e.message, 'erreur');
     } finally {
       bouton.disabled = false;
@@ -805,6 +833,24 @@ $('#btn-publier').addEventListener('click', publier);
   // En ligne, la publication est automatique : le bouton n'a plus lieu d'être.
   if (modeGitHub) {
     $('#btn-publier').hidden = true;
+
+    const pied = document.querySelector('.menu__pied');
+    if (pied) {
+      pied.innerHTML = `
+        <p class="aide-mini"><strong>Mode en ligne.</strong> Remplis, clique sur
+        <strong>Valider</strong>, puis sur <strong>💾 Enregistrer</strong>.
+        Le site public se met à jour tout seul en une minute environ —
+        il n'y a plus de bouton Publier.</p>
+        <button id="btn-deconnecter" class="bouton bouton--ligne bouton--bloc"
+                style="margin-top:10px">Changer de clé</button>`;
+      $('#btn-deconnecter').onclick = () => {
+        if (confirm("Oublier la clé enregistrée sur cet appareil ?")) {
+          definirJeton('');
+          location.reload();
+        }
+      };
+    }
+
     annoncer("Connecté. Tes modifications mettront le site public à jour toutes seules.");
     return;
   }
