@@ -1,8 +1,8 @@
-﻿/* ============================================================
+/* ============================================================
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 26/07/2026 23:51:32
+   Dernière mise à jour : 27/07/2026 01:18:37
    ============================================================ */
 
 window.CONTENU = {
@@ -12,7 +12,7 @@ window.CONTENU = {
     "couverture": "",
     "titreAccueil": "Asalaa maalekum, bienvenue keur mourite",
     "texteAccueil": "L'espace de la communauté mouride : khassaïdes, conférences, chants religieux, événements et actualités — pour tous les mourides",
-    "pied": "Serigne Touba, Dieredieuf ❤️"
+    "pied": "Serigne Touba, Dieredieuf"
   },
   "videos": [],
   "audios": [],

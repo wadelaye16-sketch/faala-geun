@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 
-Sitemap: https://faala-geun.netlify.app/sitemap.xml
+Sitemap: https://wadelaye16-sketch.github.io/faala-geun/sitemap.xml
