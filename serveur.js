@@ -41,21 +41,8 @@ function ipLocale() {
   return 'localhost';
 }
 
-/** Nom du site Netlify vers lequel publier. */
-const SITE_NETLIFY = 'faala-geun';
-
-/* Dossier temporaire contenant la version « propre » envoyée en ligne.
-   Il est placé HORS du dossier de l'application : Node refuse de copier
-   un dossier dans l'un de ses propres sous-dossiers. */
-const DOSSIER_PUBLICATION = path.join(os.tmpdir(), 'faala-geun-publication');
-
-/** Fichiers et dossiers qui restent sur cet ordinateur (outils de gestion). */
-const EXCLUS_DE_LA_PUBLICATION = [
-  '.publication', '.claude', 'node_modules', '.git',
-  'admin.html', 'reparer.html', 'serveur.js',
-  'assets/css/admin.css', 'assets/js/admin.js',
-  'data/contenu.js.precedent', 'GUIDE.md'
-];
+/** Adresse publique du site, affichée après une publication. */
+const URL_PUBLIQUE = 'https://wadelaye16-sketch.github.io/faala-geun/';
 
 /** Seuls ces dossiers peuvent recevoir des fichiers média. */
 const DOSSIERS_AUTORISES = new Set(['medias/videos', 'medias/audios', 'medias/images']);
@@ -122,32 +109,21 @@ function repondre(rep, code, donnees) {
    Publication en ligne (Netlify)
    ------------------------------------------------------------ */
 
-/** Emplacements possibles du jeton de connexion enregistré par Netlify. */
-function cheminsConfigNetlify() {
-  const app = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-  return [
-    path.join(app, 'netlify', 'Config', 'config.json'),
-    path.join(os.homedir(), '.netlify', 'config.json'),
-    path.join(os.homedir(), '.config', 'netlify', 'config.json')
-  ];
+/** Vrai si le dossier est bien relié à GitHub (donc publiable). */
+async function depotPret() {
+  const r = await lancer('git', ['remote', 'get-url', 'origin']);
+  return r.code === 0 && /github\.com/i.test(r.sortie);
 }
 
-/** Vrai si un compte Netlify est déjà autorisé sur cet ordinateur. */
-async function netlifyConnecte() {
-  for (const p of cheminsConfigNetlify()) {
-    try {
-      const brut = JSON.parse(await fsp.readFile(p, 'utf8'));
-      const users = brut.users || {};
-      if (Object.keys(users).length) return true;
-    } catch {}
-  }
-  return false;
-}
-
-/** Lance une commande et récupère toute sa sortie. */
+/** Lance une commande et récupère toute sa sortie.
+    Les arguments contenant des espaces sont mis entre guillemets : sans ça,
+    le shell les découpe et la commande reçoit des morceaux séparés. */
 function lancer(commande, args, options = {}) {
+  const argsSurs = args.map(a =>
+    /\s/.test(a) && !/^".*"$/.test(a) ? '"' + a.replace(/"/g, '\\"') + '"' : a);
+
   return new Promise(resolve => {
-    const p = spawn(commande, args, { cwd: RACINE, shell: true, ...options });
+    const p = spawn(commande, argsSurs, { cwd: RACINE, shell: true, ...options });
     let sortie = '';
     p.stdout.on('data', d => { sortie += d; process.stdout.write(d); });
     p.stderr.on('data', d => { sortie += d; process.stdout.write(d); });
@@ -156,35 +132,9 @@ function lancer(commande, args, options = {}) {
   });
 }
 
-/** Recopie l'application sans les outils de gestion, qui restent locaux. */
-async function preparerPublication() {
-  await fsp.rm(DOSSIER_PUBLICATION, { recursive: true, force: true });
-
-  const exclu = complet => {
-    const rel = path.relative(RACINE, complet).split(path.sep).join('/');
-    if (!rel) return false;
-    return EXCLUS_DE_LA_PUBLICATION.some(e => rel === e || rel.startsWith(e + '/'))
-        || rel.endsWith('.bat');
-  };
-
-  await fsp.cp(RACINE, DOSSIER_PUBLICATION, {
-    recursive: true,
-    filter: src => !exclu(src)
-  });
-
-  const fichiers = [];
-  const parcourir = async d => {
-    for (const e of await fsp.readdir(d, { withFileTypes: true })) {
-      const c = path.join(d, e.name);
-      if (e.isDirectory()) await parcourir(c); else fichiers.push(c);
-    }
-  };
-  await parcourir(DOSSIER_PUBLICATION);
-  const octets = (await Promise.all(fichiers.map(async f => (await fsp.stat(f)).size)))
-    .reduce((a, b) => a + b, 0);
-
-  return { nbFichiers: fichiers.length, octets };
-}
+/* La preparation de la version publique (tri des fichiers prives) est
+   faite par build.js, execute par GitHub a chaque publication. Le serveur
+   local n'a donc plus qu'a envoyer les fichiers sur GitHub. */
 
 /* ------------------------------------------------------------
    Le serveur
@@ -272,51 +222,57 @@ const serveur = http.createServer(async (req, rep) => {
       ok: true,
       enregistrementPossible: true,
       dossier: RACINE,
-      publicationPossible: await netlifyConnecte(),
-      site: SITE_NETLIFY
+      publicationPossible: await depotPret(),
+      site: URL_PUBLIQUE
     });
   }
 
-  /* --- Mise en ligne du site public --- */
+  /* --- Mise en ligne du site public ---
+     On envoie les fichiers sur GitHub ; c'est GitHub qui construit
+     et publie ensuite le site, tout seul, en une minute environ. --- */
   if (req.method === 'POST' && chemin === '/api/publier') {
-    if (!(await netlifyConnecte())) {
+    if (!(await depotPret())) {
       return repondre(rep, 400, {
         ok: false,
-        erreur: "Aucun compte Netlify autorisé. Double-clique sur CONNEXION-NETLIFY.bat, une seule fois."
+        erreur: "Ce dossier n'est pas relié à GitHub : la publication est impossible."
       });
     }
 
     try {
-      console.log('\n  → Preparation du paquet...');
-      const info = await preparerPublication();
-      console.log(`     ${info.nbFichiers} fichiers, ${(info.octets / 1048576).toFixed(1)} Mo`);
-      console.log('  → Envoi vers Netlify (cela peut prendre un moment)...\n');
+      console.log('\n  → Envoi vers GitHub...');
 
-      const r = await lancer('npx', [
-        '--yes', 'netlify-cli', 'deploy',
-        '--prod',
-        '--dir', `"${DOSSIER_PUBLICATION}"`,
-        '--site', SITE_NETLIFY,
-        '--no-build'
-      ]);
+      const ajout = await lancer('git', ['add', '-A']);
+      if (ajout.code !== 0) throw new Error('git add : ' + ajout.sortie.slice(-300));
 
-      await fsp.rm(DOSSIER_PUBLICATION, { recursive: true, force: true });
-
-      if (r.code !== 0) {
-        console.log('\n  ✗ Publication echouee\n');
-        return repondre(rep, 500, { ok: false, erreur: 'La publication a échoué.', detail: r.sortie.slice(-1500) });
+      const commit = await lancer('git', ['commit', '-m', 'Mise a jour du contenu depuis l espace de gestion']);
+      const rienAPublier = /nothing to commit|rien a valider|rien à valider/i.test(commit.sortie);
+      // Un echec autre que « rien a publier » doit arreter la publication,
+      // sinon on tente de synchroniser avec des fichiers a moitie prepares.
+      if (commit.code !== 0 && !rienAPublier) {
+        throw new Error('Enregistrement Git refusé : ' + commit.sortie.slice(-300));
       }
 
-      const m = r.sortie.match(/https:\/\/[a-z0-9-]+\.netlify\.app/i);
-      console.log('\n  ✓ Site publie\n');
+      // On se remet a jour d'abord : quelqu'un a pu publier entre-temps.
+      const maj = await lancer('git', ['pull', '--rebase', 'origin', 'main']);
+      if (maj.code !== 0) {
+        throw new Error("Synchronisation impossible. Un conflit existe peut-être : " +
+                        maj.sortie.slice(-300));
+      }
+
+      const envoi = await lancer('git', ['push', 'origin', 'main']);
+      if (envoi.code !== 0) throw new Error('Envoi refusé : ' + envoi.sortie.slice(-300));
+
+      console.log('  ✓ Envoye. GitHub publie le site dans la minute.\n');
       return repondre(rep, 200, {
         ok: true,
-        url: m ? m[0] : `https://${SITE_NETLIFY}.netlify.app`,
-        nbFichiers: info.nbFichiers,
-        octets: info.octets
+        url: URL_PUBLIQUE,
+        rienAPublier,
+        message: rienAPublier
+          ? "Aucune nouveauté à publier : le site est déjà à jour."
+          : "Envoyé. Le site public sera à jour dans une minute environ."
       });
     } catch (e) {
-      await fsp.rm(DOSSIER_PUBLICATION, { recursive: true, force: true }).catch(() => {});
+      console.log('\n  ✗ Publication echouee : ' + e.message + '\n');
       return repondre(rep, 500, { ok: false, erreur: e.message });
     }
   }

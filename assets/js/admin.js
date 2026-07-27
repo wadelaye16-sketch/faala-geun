@@ -226,11 +226,13 @@ async function publier() {
       return;
     }
 
-    const mo = (d.octets / 1048576).toFixed(1);
-    annoncer(`✓ En ligne ! ${d.nbFichiers} fichiers publiés (${mo} Mo).`);
-    setTimeout(() => {
-      if (confirm(`Ton site est à jour :\n${d.url}\n\nL'ouvrir maintenant ?`)) window.open(d.url, '_blank');
-    }, 700);
+    annoncer('✓ ' + (d.message || 'Envoyé.'));
+    if (!d.rienAPublier) {
+      setTimeout(() => {
+        if (confirm("Envoyé sur internet.\n\nLe site public sera à jour dans une minute environ :\n" +
+                    d.url + "\n\nL'ouvrir maintenant ?")) window.open(d.url, '_blank');
+      }, 800);
+    }
   } catch (e) {
     annoncer('Publication impossible : ' + e.message, 'erreur');
   } finally {
