@@ -862,17 +862,52 @@ $('#btn-publier').addEventListener('click', publier);
 
     const pied = document.querySelector('.menu__pied');
     if (pied) {
+      const j = jeton();
+      const type = j.startsWith('ghp_') ? 'classique'
+                 : j.startsWith('github_pat_') ? 'fine-grained'
+                 : 'inconnu';
+
       pied.innerHTML = `
         <p class="aide-mini"><strong>Mode en ligne.</strong> Remplis, clique sur
         <strong>Valider</strong>, puis sur <strong>💾 Enregistrer</strong>.
-        Le site public se met à jour tout seul en une minute environ —
-        il n'y a plus de bouton Publier.</p>
+        Le site public se met à jour tout seul en une minute environ.</p>
+        <p class="aide-mini">Clé utilisée : <strong>${esc(type)}</strong>
+           (…${esc(j.slice(-4))})</p>
+        <button id="btn-tester" class="bouton bouton--ligne bouton--bloc"
+                style="margin-top:10px">Tester ma clé</button>
         <button id="btn-deconnecter" class="bouton bouton--ligne bouton--bloc"
-                style="margin-top:10px">Changer de clé</button>`;
+                style="margin-top:6px">Changer de clé</button>`;
+
       $('#btn-deconnecter').onclick = () => {
         if (confirm("Oublier la clé enregistrée sur cet appareil ?")) {
           definirJeton('');
           location.reload();
+        }
+      };
+
+      // Écriture réelle puis nettoyage : le seul moyen fiable de savoir
+      // si la clé a vraiment le droit d'écrire.
+      $('#btn-tester').onclick = async () => {
+        const b = $('#btn-tester');
+        b.disabled = true; b.textContent = 'Essai en cours…';
+        try {
+          const r = await ecrireSurGitHub('.essai-cle.txt',
+            enBase64('essai ' + new Date().toISOString()), 'Essai de la cle');
+          try {
+            await apiGitHub('/contents/.essai-cle.txt', {
+              method: 'DELETE',
+              body: JSON.stringify({ message: 'Nettoyage essai', sha: r.content.sha, branch: GH.branche })
+            });
+          } catch {}
+          alert("✓ Ta clé fonctionne : l'écriture a réussi.\n\n" +
+                "Si l'enregistrement échoue quand même, préviens-moi : " +
+                "le problème serait ailleurs.");
+        } catch (e) {
+          alert("✗ Ta clé ne peut pas écrire.\n\n" + e.message +
+                "\n\nUtilise « Changer de clé » et colle une clé classique " +
+                "(elle commence par ghp_), créée avec la case « repo » cochée.");
+        } finally {
+          b.disabled = false; b.textContent = 'Tester ma clé';
         }
       };
     }
