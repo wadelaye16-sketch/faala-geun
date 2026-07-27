@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 27/07/2026 15:31:18
+   Dernière mise à jour : 27/07/2026 15:32:05
    ============================================================ */
 
 window.CONTENU = {
@@ -10,7 +10,7 @@ window.CONTENU = {
     "nom": "FAALA GEUN",
     "slogan": "Communauté Mouride",
     "couverture": "",
-    "titreAccueil": "Asalaa maalekum, bienvenue keur mourite",
+    "titreAccueil": "Asalaa maalekum, bienvenue",
     "texteAccueil": "L'espace de la communauté mouride : khassaïdes, conférences, chants religieux, événements et actualités — pour tous les mourides",
     "pied": "Serigne Touba, Dieredieuf"
   },
