@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 27/07/2026 15:21:13
+   Dernière mise à jour : 27/07/2026 15:24:54
    ============================================================ */
 
 window.CONTENU = {
@@ -18,12 +18,6 @@ window.CONTENU = {
   "audios": [],
   "evenements": [],
   "actualites": [
-    {
-      "titre": "Essai de publication automatique",
-      "date": "2026-07-27",
-      "auteur": "Verification",
-      "resume": "Cette actualite verifie que le bouton Publier met bien le site en ligne a jour."
-    },
     {
       "titre": "Bienvenue sur l'application de la communauté",
       "date": "2026-07-25",
