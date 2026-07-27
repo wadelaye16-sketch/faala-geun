@@ -155,7 +155,11 @@ function annoncer(texte, genre = '') {
 
 function marquerModifie() {
   modifie = true;
-  try { localStorage.setItem('touba-brouillon', JSON.stringify(D)); } catch {}
+  // Horodaté : un brouillon ancien ne doit jamais écraser un contenu plus récent.
+  try {
+    localStorage.setItem('touba-brouillon',
+      JSON.stringify({ quand: Date.now(), donnees: D }));
+  } catch {}
 }
 
 window.addEventListener('beforeunload', e => {
@@ -832,18 +836,35 @@ $('#btn-enregistrer').addEventListener('click', enregistrer);
 $('#btn-publier').addEventListener('click', publier);
 
 (async function demarrer() {
-  // Reprise d'un éventuel brouillon non enregistré
+  /* Reprise d'un brouillon non enregistré.
+     Un brouillon oublié depuis des heures représente un état périmé :
+     le reprendre effacerait silencieusement tout ce qui a été fait depuis.
+     On l'écarte donc au-delà de deux heures, et on demande confirmation
+     en nommant explicitement le risque. */
   try {
-    const brouillon = localStorage.getItem('touba-brouillon');
-    if (brouillon && brouillon !== JSON.stringify(fusionner(window.CONTENU))) {
-      if (confirm("Des modifications non enregistrées ont été retrouvées.\n\nVeux-tu les récupérer ?")) {
-        D = fusionner(JSON.parse(brouillon));
-        modifie = true;
-      } else {
+    const brut = localStorage.getItem('touba-brouillon');
+    if (brut) {
+      const b = JSON.parse(brut);
+      const age = Date.now() - (b.quand || 0);
+      const perime = !b.quand || age > 2 * 3600 * 1000;
+      const different = JSON.stringify(b.donnees) !== JSON.stringify(fusionner(window.CONTENU));
+
+      if (perime || !different) {
         localStorage.removeItem('touba-brouillon');
+      } else {
+        const minutes = Math.round(age / 60000);
+        if (confirm(
+            `Des modifications non enregistrées datant d'il y a ${minutes} minute(s) ont été retrouvées.\n\n` +
+            "Les reprendre REMPLACERA le contenu actuel de l'application.\n\n" +
+            "Reprendre ces modifications ?")) {
+          D = fusionner(b.donnees);
+          modifie = true;
+        } else {
+          localStorage.removeItem('touba-brouillon');
+        }
       }
     }
-  } catch {}
+  } catch { try { localStorage.removeItem('touba-brouillon'); } catch {} }
 
   serveurActif = await testerServeur();
 
