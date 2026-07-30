@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 21:15:42
+   Dernière mise à jour : 30/07/2026 21:41:27
    ============================================================ */
 
 window.CONTENU = {
@@ -17,8 +17,33 @@ window.CONTENU = {
   },
   "textes": {},
   "videos": [],
-  "audios": [],
-  "boutique": [],
+  "audios": [
+    {
+      "titre": "JAZBU",
+      "artiste": "NOURROU DARAYNI THIES",
+      "categorie": "Khassida",
+      "fichier": "medias/audios/ht-k1-thies-j23-jazbu-s-mbaye-diop-k1-ht-thies-2.mp3"
+    },
+    {
+      "titre": "Nourrou darayni",
+      "artiste": "Serigne saliou Aissy",
+      "categorie": "Khassida",
+      "duree": "59",
+      "fichier": "https://youtu.be/0KTxp746pCU?is=Kqxd4kTdio9T38Gh"
+    }
+  ],
+  "boutique": [
+    {
+      "titre": "Lakhasaye",
+      "prix": "35",
+      "devise": "euro",
+      "categorie": "Lakhasay",
+      "disponible": "oui",
+      "whatsapp": "33678340197",
+      "vendeur": "Ablaye wade",
+      "image": "medias/images/img_3658.jpeg"
+    }
+  ],
   "evenements": [],
   "actualites": [
     {
