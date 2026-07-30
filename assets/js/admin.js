@@ -487,6 +487,24 @@ async function apiGitHub(chemin, options = {}) {
   return d;
 }
 
+/* Relit le contenu directement sur GitHub.
+   La page publiée peut être servie depuis un cache : partir d'elle
+   reviendrait à réécrire une version périmée par-dessus les ajouts
+   faits ailleurs. C'est ainsi qu'un article avait été effacé. */
+async function contenuFraisDeGitHub() {
+  const d = await apiGitHub(`/contents/data/contenu.js?ref=${GH.branche}`);
+  const binaire = atob(d.content.replace(/\n/g, ''));
+  const octets = Uint8Array.from(binaire, c => c.charCodeAt(0));
+  const texte = new TextDecoder('utf-8').decode(octets);
+
+  const bac = {};
+  new Function('window', texte)(bac);
+  if (!bac.CONTENU || typeof bac.CONTENU !== 'object') {
+    throw new Error('contenu illisible');
+  }
+  return bac.CONTENU;
+}
+
 /** Écrit (ou remplace) un fichier dans le dépôt. */
 async function ecrireSurGitHub(chemin, contenuBase64, message) {
   let sha;
