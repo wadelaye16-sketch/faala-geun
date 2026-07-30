@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
@@ -10,12 +10,14 @@ window.CONTENU = {
     "nom": "FAALA GEUN",
     "slogan": "Communauté Mouride",
     "couverture": "medias/images/img_9045.jpeg",
+    "whatsapp": "",
     "titreAccueil": "Asalaa maalekum, bienvenue sur FAALA GEUN",
     "texteAccueil": "L'espace de la communauté mouride : khassaïdes, conférences, chants religieux, événements et actualités — pour tous les mourides",
     "pied": "Serigne Touba, Dieredieuf"
   },
   "videos": [],
   "audios": [],
+  "boutique": [],
   "evenements": [],
   "actualites": [
     {

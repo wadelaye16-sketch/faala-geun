@@ -242,6 +242,37 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 [data-theme="sombre"] .etiquette { color: var(--or-300); }
 .meta { font-size: .78rem; color: var(--texte-doux); }
 
+/* Article de la boutique */
+.article__photo {
+  width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+  background: var(--vert-100); display: block;
+}
+.article__photo--vide {
+  background: linear-gradient(135deg, var(--vert-100), var(--surface-2));
+}
+.article__pied {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-top: 6px;
+}
+.article__prix {
+  font-family: var(--police-titre); font-size: 1.18rem; font-weight: 700;
+  color: var(--vert-800);
+}
+[data-theme="sombre"] .article__prix { color: var(--or-300); }
+.article__commander { padding: 8px 18px; font-size: .86rem; text-decoration: none; }
+.article__epuise {
+  background: var(--surface-2); color: var(--texte-doux);
+  font-size: .78rem; font-weight: 700; padding: 5px 12px; border-radius: 999px;
+}
+.article--epuise .article__photo { filter: grayscale(1) opacity(.55); }
+
+/* Avis d'information */
+.avis {
+  background: var(--vert-100); border-left: 4px solid var(--or-500);
+  border-radius: var(--r-sm); padding: 12px 16px; margin-bottom: 16px;
+  font-size: .9rem; color: var(--texte-doux);
+}
+
 /* Piste audio */
 .piste {
   display: flex; align-items: center; gap: 12px;
@@ -335,12 +366,13 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 58;
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   background: var(--surface); border-top: 1px solid var(--bordure);
 }
 .tabbar a {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  font-size: .66rem; font-weight: 600; color: var(--texte-doux);
+  font-size: .6rem; font-weight: 600; color: var(--texte-doux);
+  padding: 0 2px; text-align: center; line-height: 1.15;
 }
 .tabbar a svg { width: 21px; height: 21px; }
 .tabbar a.actif { color: var(--vert-700); }

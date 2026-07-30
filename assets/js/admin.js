@@ -20,6 +20,9 @@ const SECTIONS = {
       { cle: 'couverture', label: "Photo de couverture", type: 'media', accept: 'image/*',
         dossier: 'medias/images',
         aide: "Photo affichée en fond du bandeau d'accueil. Format paysage conseillé (1600×900)." },
+      { cle: 'whatsapp', label: 'Numéro WhatsApp de la boutique', type: 'texte',
+        aide: "Avec l'indicatif du pays, sans espaces. Exemple : 221771234567. " +
+              "Sans ce numéro, le bouton « Commander » n'apparaît pas." },
       { cle: 'titreAccueil', label: "Titre de la page d'accueil", type: 'texte' },
       { cle: 'texteAccueil', label: "Texte de bienvenue", type: 'zone' },
       { cle: 'pied', label: 'Texte du bas de page', type: 'texte' }
@@ -63,6 +66,25 @@ const SECTIONS = {
     ]
   },
 
+  boutique: {
+    titre: 'Boutique',
+    sousTitre: 'Articles proposés par la dahira. La commande se fait par WhatsApp.',
+    singulier: 'un article',
+    vignette: 'image',
+    champs: [
+      { cle: 'titre', label: "Nom de l'article", type: 'texte', requis: true },
+      { cle: 'description', label: 'Description', type: 'zone' },
+      { cle: 'prix', label: 'Prix en FCFA', type: 'texte',
+        aide: 'Chiffres seulement. Exemple : 12500 — affiché « 12 500 FCFA ».' },
+      { cle: 'categorie', label: 'Catégorie', type: 'texte', liste: true,
+        aide: 'Ex. : Livres, Chapelets, Tissus, Khassaïdes imprimés.' },
+      { cle: 'disponible', label: 'Disponible ?', type: 'choix',
+        options: ['oui', 'non'], aide: '« non » affiche « Épuisé » et masque le bouton.' },
+      { cle: 'image', label: 'Photo', type: 'media', accept: 'image/*',
+        dossier: 'medias/images', aide: 'Photo carrée de préférence.' }
+    ]
+  },
+
   evenements: {
     titre: 'Événements',
     sousTitre: 'Magal, gamous, ziars et rencontres.',
@@ -97,7 +119,7 @@ const SECTIONS = {
    État
    ------------------------------------------------------------ */
 
-const VIDE = { site: {}, videos: [], audios: [], evenements: [], actualites: [] };
+const VIDE = { site: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
 
 /** Copie de travail du contenu. */
 let D = fusionner(window.CONTENU);
@@ -112,7 +134,7 @@ function fusionner(brut) {
   const d = JSON.parse(JSON.stringify(VIDE));
   if (brut && typeof brut === 'object') {
     d.site = { ...brut.site };
-    for (const k of ['videos', 'audios', 'evenements', 'actualites']) {
+    for (const k of ['videos', 'audios', 'boutique', 'evenements', 'actualites']) {
       if (Array.isArray(brut[k])) d[k] = JSON.parse(JSON.stringify(brut[k]));
     }
   }
@@ -671,6 +693,15 @@ function champHTML(c, valeur) {
     return `<div class="champ">
       <label for="${id}">${esc(c.label)}${req}</label>
       <input type="date" id="${id}" value="${esc(valeur)}">${aide}</div>`;
+  }
+
+  if (c.type === 'choix') {
+    const actuelle = valeur || c.options[0];
+    return `<div class="champ">
+      <label for="${id}">${esc(c.label)}${req}</label>
+      <select id="${id}">${c.options.map(o =>
+        `<option value="${esc(o)}" ${o === actuelle ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
+      ${aide}</div>`;
   }
 
   if (c.type === 'media') {

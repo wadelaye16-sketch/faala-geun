@@ -1,11 +1,11 @@
-/* ============================================================
+﻿/* ============================================================
    Touba Média — logique de l'application
    Tout le contenu vient de data/contenu.json
    ============================================================ */
 
 'use strict';
 
-const ROUTES = ['accueil', 'videos', 'musiques', 'evenements', 'actualites'];
+const ROUTES = ['accueil', 'videos', 'musiques', 'boutique', 'evenements', 'actualites'];
 const MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
                    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
@@ -13,10 +13,10 @@ const MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
 const app = document.getElementById('app');
 
 /** Données chargées depuis data/contenu.json */
-let DATA = { site: {}, videos: [], audios: [], evenements: [], actualites: [] };
+let DATA = { site: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
 
 /** Filtre de catégorie actif, par page */
-const filtreActif = { videos: 'Tout', musiques: 'Tout' };
+const filtreActif = { videos: 'Tout', musiques: 'Tout', boutique: 'Tout' };
 
 /** Terme de recherche courant */
 let recherche = '';
@@ -102,6 +102,7 @@ function chargerDonnees() {
     site: brut.site || {},
     videos: brut.videos || [],
     audios: brut.audios || [],
+    boutique: brut.boutique || [],
     evenements: brut.evenements || [],
     actualites: brut.actualites || []
   };
@@ -199,6 +200,48 @@ function carteActu(n, i) {
       ${n.resume ? `<p>${esc(n.resume)}</p>` : ''}
       ${n.contenu ? `<p class="actu__long">${esc(n.contenu)}</p>
         <button class="actu__plus">Lire la suite ▾</button>` : ''}
+    </div>
+  </article>`;
+}
+
+/** Prix formaté à la sénégalaise : 12 500 FCFA */
+function prixLisible(v) {
+  const n = Number(String(v).replace(/[^0-9]/g, ''));
+  if (!n) return String(v || '');
+  return n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' FCFA';
+}
+
+/** Lien de commande WhatsApp, pré-rempli avec le nom de l'article. */
+function lienCommande(article) {
+  const num = String(DATA.site.whatsapp || '').replace(/[^0-9]/g, '');
+  if (!num) return null;
+  const texte = `Asalaa maalekum. Je souhaite commander : ${article.titre}` +
+                (article.prix ? ` (${prixLisible(article.prix)})` : '') + '.';
+  return `https://wa.me/${num}?text=${encodeURIComponent(texte)}`;
+}
+
+function carteArticle(a, i) {
+  const lien = lienCommande(a);
+  const epuise = String(a.disponible).toLowerCase() === 'non';
+
+  return `
+  <article class="carte article ${epuise ? 'article--epuise' : ''}">
+    ${a.image
+      ? `<img class="article__photo" src="${esc(a.image)}" alt="" loading="lazy">`
+      : `<div class="article__photo article__photo--vide"></div>`}
+    <div class="carte__corps">
+      <h3>${esc(a.titre)}</h3>
+      ${a.description ? `<p>${esc(a.description)}</p>` : ''}
+      <div class="article__pied">
+        ${a.prix ? `<span class="article__prix">${esc(prixLisible(a.prix))}</span>` : ''}
+        ${epuise
+          ? `<span class="article__epuise">Épuisé</span>`
+          : lien
+            ? `<a class="btn btn--gold article__commander" href="${esc(lien)}"
+                  target="_blank" rel="noopener">Commander</a>`
+            : ''}
+      </div>
+      ${a.categorie ? `<div class="carte__pied"><span class="etiquette">${esc(a.categorie)}</span></div>` : ''}
     </div>
   </article>`;
 }
@@ -309,6 +352,31 @@ const pages = {
           recherche ? `Aucun audio ne correspond à « ${esc(recherche)} ».`
           : DATA.audios.length ? 'Aucun audio dans cette catégorie.'
           : 'Les khassaïdes arrivent bientôt, incha Allah.')}`;
+  },
+
+  boutique() {
+    const cat = filtreActif.boutique || 'Tout';
+    const liste = DATA.boutique
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) => (cat === 'Tout' || a.categorie === cat) && correspond(a, recherche));
+
+    const sansNumero = !DATA.site.whatsapp;
+
+    return `
+    <div class="page-tete">
+      <h1>Boutique</h1>
+      <p>Articles proposés par la dahira. La commande se fait par WhatsApp.</p>
+    </div>
+    ${sansNumero && DATA.boutique.length ? `<div class="avis">
+      Aucun numéro WhatsApp n'est renseigné : le bouton « Commander » reste caché.
+    </div>` : ''}
+    ${barreFiltres('boutique', DATA.boutique)}
+    ${liste.length
+      ? `<div class="grille">${liste.map(({ a, i }) => carteArticle(a, i)).join('')}</div>`
+      : messageVide(
+          recherche ? `Aucun article ne correspond à « ${esc(recherche)} ».`
+          : DATA.boutique.length ? 'Aucun article dans cette catégorie.'
+          : 'La boutique ouvrira bientôt, incha Allah.')}`;
   },
 
   evenements() {
