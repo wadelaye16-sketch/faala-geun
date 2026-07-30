@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 22:33:15
+   Dernière mise à jour : 30/07/2026 22:39:36
    ============================================================ */
 
 window.CONTENU = {
@@ -22,13 +22,15 @@ window.CONTENU = {
       "titre": "nourrou darayni",
       "artiste": "serigne saliou aissy",
       "categorie": "rajass",
-      "fichier": "medias/audios/nourou_darayni_rajass_serigne_saliou_aissy_xidmatv_extr_nourou_d.mp3"
+      "fichier": "medias/audios/nourou_darayni_rajass_serigne_saliou_aissy_xidmatv_extr_nourou_d.mp3",
+      "affiche": "medias/images/6008348966241635549_121.jpg"
     },
     {
       "titre": "JAZBU",
       "artiste": "NOURROU DARAYNI THIES",
       "categorie": "Khassida",
-      "fichier": "medias/audios/ht-k1-thies-j23-jazbu-s-mbaye-diop-k1-ht-thies-2.mp3"
+      "fichier": "medias/audios/ht-k1-thies-j23-jazbu-s-mbaye-diop-k1-ht-thies-2.mp3",
+      "affiche": "medias/images/6008348966241635550_120.jpg"
     }
   ],
   "boutique": [],
