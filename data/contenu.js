@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 19:42:12
+   Dernière mise à jour : 30/07/2026 20:28:02
    ============================================================ */
 
 window.CONTENU = {
@@ -17,7 +17,15 @@ window.CONTENU = {
   },
   "textes": {},
   "videos": [],
-  "audios": [],
+  "audios": [
+    {
+      "titre": "Nourrou darayni",
+      "artiste": "Serigne saliou Aissy",
+      "categorie": "Khassida",
+      "duree": "59",
+      "fichier": "https://youtu.be/0KTxp746pCU?is=Kqxd4kTdio9T38Gh"
+    }
+  ],
   "boutique": [],
   "evenements": [],
   "actualites": [
