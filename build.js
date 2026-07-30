@@ -66,6 +66,22 @@ function estPrive(complet) {
      Sans ca, un telephone peut continuer d'executer une ancienne version
      gardee en cache et afficher des erreurs deja corrigees. */
   const version = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+
+  /* Meme probleme, en pire, pour le mode hors-connexion : tant que la
+     version du service worker ne change pas, les visiteurs deja venus
+     rejouent l'ancienne application indefiniment. On la date donc a
+     chaque publication, au lieu de compter sur une mise a jour manuelle. */
+  const worker = path.join(CIBLE, 'sw.js');
+  if (fs.existsSync(worker)) {
+    const js = await fsp.readFile(worker, 'utf8');
+    const remplace = js.replace(/const VERSION = '[^']*'/, `const VERSION = 'faala-geun-${version}'`);
+    if (remplace === js) {
+      console.error('ERREUR : impossible de dater sw.js — les visiteurs garderaient une version perimee.');
+      process.exit(1);
+    }
+    await fsp.writeFile(worker, remplace, 'utf8');
+    console.log('Mode hors-connexion date : faala-geun-' + version);
+  }
   const pageGestion = path.join(CIBLE, 'admin.html');
   if (fs.existsSync(pageGestion)) {
     const html = await fsp.readFile(pageGestion, 'utf8');
