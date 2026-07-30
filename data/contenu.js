@@ -1,6 +1,8 @@
 /* ============================================================
-   Contenu de l'application FAALA GEUN.
+   Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
+   Tu peux le modifier à la main, mais l'interface est plus sûre.
+   Dernière mise à jour : 30/07/2026 20:47:34
    ============================================================ */
 
 window.CONTENU = {
@@ -17,11 +19,12 @@ window.CONTENU = {
   "videos": [],
   "audios": [
     {
-      "titre": "Nourrou darayni",
+      "titre": "Nourrou Darayni",
       "artiste": "Serigne saliou Aissy",
       "categorie": "Khassida",
-      "duree": "59",
-      "fichier": "https://youtu.be/0KTxp746pCU?is=Kqxd4kTdio9T38Gh"
+      "duree": "55:38",
+      "fichier": "https://youtu.be/0KTxp746pCU?is=qC74i6ITuMBVXORn",
+      "affiche": "medias/images/img_3659.jpeg"
     }
   ],
   "boutique": [
