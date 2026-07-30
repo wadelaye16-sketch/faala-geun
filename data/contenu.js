@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 15:53:30
+   Dernière mise à jour : 30/07/2026 15:59:05
    ============================================================ */
 
 window.CONTENU = {
@@ -15,21 +15,20 @@ window.CONTENU = {
     "texteAccueil": "L'espace de la communauté mouride : khassaïdes, conférences, chants religieux, événements et actualités — pour tous les mourides",
     "pied": "Serigne Touba, Dieredieuf"
   },
-  "textes": {
-    "videosTitre": "Vidéos",
-    "videosSous": "Khassaïdes, conférences et moments forts de la communauté.",
-    "musiquesTitre": "Musiques & Khassaïdes",
-    "musiquesSous": "Chants religieux, récitations et enregistrements audio.",
-    "boutiqueTitre": "Boutique Pour Tous",
-    "boutiqueSous": "La commande se fait par WhatsApp.",
-    "evenementsTitre": "Événements",
-    "evenementsSous": "Magal, gamous, ziars et rencontres de la communauté.",
-    "actualitesTitre": "Actualités",
-    "actualitesSous": "Annonces et nouvelles de la communauté."
-  },
+  "textes": {},
   "videos": [],
   "audios": [],
-  "boutique": [],
+  "boutique": [
+    {
+      "titre": "Lakhasaye",
+      "description": "Lakhasaye en coton",
+      "prix": "35€",
+      "categorie": "Lakhasaye",
+      "disponible": "oui",
+      "whatsapp": "0678340197",
+      "image": "medias/images/img_3658.jpeg"
+    }
+  ],
   "evenements": [],
   "actualites": [
     {
