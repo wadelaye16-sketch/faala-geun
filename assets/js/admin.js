@@ -80,7 +80,10 @@ const SECTIONS = {
       { cle: 'categorie', label: 'Catégorie', type: 'texte', liste: true },
       { cle: 'duree', label: 'Durée', type: 'texte', aide: 'Ex. : 12:30' },
       { cle: 'fichier', label: 'Fichier audio', type: 'media', accept: 'audio/*',
-        dossier: 'medias/audios', requis: true, aide: 'Choisis un fichier MP3.' },
+        dossier: 'medias/audios', requis: true,
+        aide: "Choisis un fichier MP3 — ou colle le lien direct d'un audio hébergé " +
+              "ailleurs. Depuis le téléphone, la limite est de 32 Mo ; depuis " +
+              "l'ordinateur avec GESTION.bat, il n'y en a pas." },
       { cle: 'affiche', label: 'Pochette', type: 'media', accept: 'image/*',
         dossier: 'medias/images', aide: 'Facultatif.' }
     ]
@@ -819,11 +822,19 @@ function brancherChampsMedia(conf) {
         }
 
       } else if (modeGitHub) {
-        // GitHub refuse les gros fichiers : mieux vaut prévenir que planter.
-        if (f.size > 24 * 1048576) {
-          apercu.innerHTML = `<span class="alerte-fichier">Fichier trop lourd (${poids} Mo).
-            Au-delà de 24 Mo, héberge-le ailleurs et colle son lien dans le champ ci-dessus.</span>`;
+        /* Limite mesurée : GitHub accepte 30 Mo et refuse 45 Mo.
+           On s'arrête à 32 Mo, avec un message bloquant : un simple texte
+           sous le champ passait inaperçu, et l'article devenait
+           impossible à enregistrer sans qu'on comprenne pourquoi. */
+        if (f.size > 32 * 1048576) {
+          apercu.innerHTML = `<span class="alerte-fichier">Fichier trop lourd :
+            ${poids} Mo, maximum 32 Mo depuis le téléphone.</span>`;
           champTexte.value = '';
+          alert(`« ${f.name} » pèse ${poids} Mo.\n\n` +
+                `Depuis le téléphone, la limite est de 32 Mo.\n\n` +
+                `Deux solutions :\n` +
+                `• ajoute ce fichier depuis l'ordinateur avec GESTION.bat (aucune limite)\n` +
+                `• ou héberge-le ailleurs et colle son lien dans le champ`);
           return;
         }
         apercu.textContent = `Envoi de ${f.name} (${poids} Mo)… cela peut prendre du temps en 4G.`;
@@ -835,6 +846,11 @@ function brancherChampsMedia(conf) {
         } catch (e) {
           apercu.innerHTML = `<span class="alerte-fichier">Envoi impossible : ${esc(e.message)}</span>`;
           champTexte.value = '';
+          // Sans alerte, l'envoi echoue en silence et l'article devient
+          // impossible a enregistrer sans qu'on sache pourquoi.
+          alert(`L'envoi de « ${f.name} » a échoué.\n\n${e.message}\n\n` +
+                `Le champ a été vidé : l'article ne pourra pas être enregistré tant ` +
+                `qu'un fichier ou un lien n'y figure pas.`);
         } finally {
           bouton.disabled = false;
         }
