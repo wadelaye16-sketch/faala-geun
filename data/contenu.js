@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 19:26:27
+   Dernière mise à jour : 30/07/2026 19:26:55
    ============================================================ */
 
 window.CONTENU = {
@@ -26,7 +26,8 @@ window.CONTENU = {
       "date": "2026-07-25",
       "auteur": "L'équipe",
       "resume": "FAALA GEUN rassemble vidéos, khassaïdes, événements et annonces en un seul endroit.",
-      "contenu": "Tu peux désormais retrouver tout le contenu de la communauté depuis ton téléphone.\n\nSur Android, appuie sur le bouton « Installer » ; sur iPhone, utilise Partager puis « Sur l'écran d'accueil ». L'application s'ouvrira comme une vraie application.\n\nLe contenu arrive progressivement. Pour proposer une vidéo, un enregistrement ou une annonce, contacte les responsables de la dahira."
+      "contenu": "Tu peux désormais retrouver tout le contenu de la communauté depuis ton téléphone.\n\nSur Android, appuie sur le bouton « Installer » ; sur iPhone, utilise Partager puis « Sur l'écran d'accueil ». L'application s'ouvrira comme une vraie application.\n\nLe contenu arrive progressivement. Pour proposer une vidéo, un enregistrement ou une annonce, contacte les responsables de la dahira.",
+      "image": "medias/images/img_3645.png"
     }
   ]
 };
