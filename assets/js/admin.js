@@ -281,23 +281,29 @@ function demanderJeton(messageErreur) {
         </div>
         <button id="valider-jeton" class="bouton bouton--or">Se connecter</button>
 
-        <details style="margin-top:22px">
-          <summary style="cursor:pointer; font-weight:700">Je n'ai pas encore de clé</summary>
-          <ol style="color:var(--texte-doux); font-size:.92rem; line-height:1.7; padding-left:20px">
-            <li>Ouvre <a href="https://github.com/settings/personal-access-tokens/new"
-                target="_blank" rel="noopener">cette page GitHub</a> (connecte-toi si besoin).</li>
-            <li><strong>Token name</strong> : écris <code>FAALA GEUN</code></li>
+        <details style="margin-top:22px" open>
+          <summary style="cursor:pointer; font-weight:700">Comment obtenir ma clé</summary>
+
+          <p style="color:var(--texte-doux); font-size:.92rem">
+            <strong>D'abord :</strong> assure-toi d'être connecté sur GitHub avec le compte
+            <code>${esc(GH.proprietaire)}</code>. Une clé créée depuis un autre compte
+            sera refusée.</p>
+
+          <ol style="color:var(--texte-doux); font-size:.92rem; line-height:1.8; padding-left:20px">
+            <li>Ouvre <a href="https://github.com/settings/tokens/new?scopes=repo&description=FAALA%20GEUN"
+                target="_blank" rel="noopener"><strong>cette page</strong></a> —
+                le nom et la case sont déjà remplis.</li>
             <li><strong>Expiration</strong> : choisis <code>No expiration</code></li>
-            <li><strong>Repository access</strong> : coche <code>Only select repositories</code>,
-                puis choisis <code>faala-geun</code></li>
-            <li><strong>Permissions</strong> → <em>Repository permissions</em> →
-                ligne <code>Contents</code> → mets <code>Read and write</code></li>
-            <li>Bouton vert <strong>Generate token</strong>, puis copie la clé affichée
-                et colle-la ci-dessus.</li>
+            <li>Vérifie que la case <code>repo</code> est bien cochée</li>
+            <li>Tout en bas : bouton vert <strong>Generate token</strong></li>
+            <li>Copie la clé affichée (elle commence par <code>ghp_</code>)
+                et colle-la ci-dessus</li>
           </ol>
+
           <p style="color:var(--texte-doux); font-size:.88rem">
-            Cette clé ne donne accès qu'à ce seul projet. Si tu perds ton téléphone,
-            tu peux la supprimer depuis GitHub et elle cesse aussitôt de fonctionner.</p>
+            GitHub n'affiche cette clé qu'une seule fois. Elle reste ensuite sur ton
+            téléphone. Si tu le perds, supprime-la depuis GitHub : elle cesse
+            aussitôt de fonctionner.</p>
         </details>
       </div>
     </div>`;
@@ -422,24 +428,46 @@ async function ecrireSurGitHub(chemin, contenuBase64, message) {
 /** Dernier motif de refus de la clé, pour l'afficher à l'utilisateur. */
 let motifRefusJeton = '';
 
-/** Vérifie que la clé fonctionne ET qu'elle donne vraiment le droit d'écrire. */
+/** Compte GitHub auquel appartient la clé enregistrée. */
+let compteDeLaCle = '';
+
+/* Vérifie la clé en tentant une VRAIE écriture, puis en effaçant la trace.
+   C'est le seul contrôle fiable : GitHub répond que l'utilisateur a le droit
+   d'écrire même quand la clé, elle, ne l'a pas. */
 async function verifierJeton() {
   motifRefusJeton = '';
+  compteDeLaCle = '';
   if (!jeton()) return false;
+
+  // 1. À quel compte appartient cette clé ?
   try {
-    const d = await apiGitHub('');
-    // Une clé en lecture seule passerait la première étape puis échouerait
-    // au moment d'enregistrer : autant la refuser tout de suite.
-    if (!d.permissions || d.permissions.push !== true) {
-      motifRefusJeton = "Cette clé peut lire le projet mais pas y écrire. " +
-        "Reprends l'étape 5 : Permissions → Contents → « Read and write ».";
-      return false;
-    }
+    const u = await (await fetch('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${jeton()}`, Accept: 'application/vnd.github+json' }
+    })).json();
+    compteDeLaCle = u.login || '';
+  } catch {}
+
+  if (compteDeLaCle && compteDeLaCle.toLowerCase() !== GH.proprietaire.toLowerCase()) {
+    motifRefusJeton =
+      `Cette clé appartient au compte GitHub « ${compteDeLaCle} », ` +
+      `alors que le projet appartient à « ${GH.proprietaire} ».\n\n` +
+      `Connecte-toi sur GitHub avec le compte ${GH.proprietaire} avant de créer la clé.`;
+    return false;
+  }
+
+  // 2. Peut-elle réellement écrire ?
+  try {
+    const r = await ecrireSurGitHub('.verification-cle.txt',
+      enBase64('verification ' + new Date().toISOString()), 'Verification de la cle');
+    try {
+      await apiGitHub('/contents/.verification-cle.txt', {
+        method: 'DELETE',
+        body: JSON.stringify({ message: 'Nettoyage verification', sha: r.content.sha, branch: GH.branche })
+      });
+    } catch {}
     return true;
   } catch (e) {
-    motifRefusJeton = /404/.test(e.message)
-      ? "Clé refusée, ou elle ne donne pas accès au projet faala-geun. Vérifie l'étape 4."
-      : 'Clé refusée par GitHub : ' + e.message;
+    motifRefusJeton = e.message;
     return false;
   }
 }
@@ -894,8 +922,8 @@ $('#btn-publier').addEventListener('click', publier);
         <p class="aide-mini"><strong>Mode en ligne.</strong> Remplis, clique sur
         <strong>Valider</strong>, puis sur <strong>💾 Enregistrer</strong>.
         Le site public se met à jour tout seul en une minute environ.</p>
-        <p class="aide-mini">Clé utilisée : <strong>${esc(type)}</strong>
-           (…${esc(j.slice(-4))})</p>
+        <p class="aide-mini">Clé <strong>${esc(type)}</strong> (…${esc(j.slice(-4))})
+           — compte <strong>${esc(compteDeLaCle || '?')}</strong></p>
         <button id="btn-tester" class="bouton bouton--ligne bouton--bloc"
                 style="margin-top:10px">Tester ma clé</button>
         <button id="btn-deconnecter" class="bouton bouton--ligne bouton--bloc"
