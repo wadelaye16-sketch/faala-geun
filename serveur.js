@@ -256,11 +256,19 @@ const serveur = http.createServer(async (req, rep) => {
         throw new Error('Enregistrement Git refusé : ' + commit.sortie.slice(-300));
       }
 
-      // On se remet a jour d'abord : quelqu'un a pu publier entre-temps.
-      const maj = await lancer('git', ['pull', '--rebase', 'origin', 'main']);
+      /* On se remet a jour : quelqu'un a pu publier depuis le telephone.
+         En cas de desaccord sur un meme fichier, c'est la version de CET
+         ordinateur qui l'emporte — c'est elle qu'on a demande a publier.
+         Et si le rebasage echoue malgre tout, on l'annule : laisser le
+         dossier a moitie rebase bloquait toutes les publications suivantes
+         sans que rien ne l'indique. */
+      await lancer('git', ['fetch', 'origin', 'main']);
+      const maj = await lancer('git', ['rebase', '-X', 'theirs', 'origin/main']);
       if (maj.code !== 0) {
-        throw new Error("Synchronisation impossible. Un conflit existe peut-être : " +
-                        maj.sortie.slice(-300));
+        await lancer('git', ['rebase', '--abort']);
+        throw new Error(
+          "Synchronisation impossible : ton dossier a été remis dans son état " +
+          "d'avant, rien n'est cassé. Détail : " + maj.sortie.slice(-250));
       }
 
       const envoi = await lancer('git', ['push', 'origin', 'main']);
