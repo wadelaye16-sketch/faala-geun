@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 15:59:05
+   Dernière mise à jour : 30/07/2026 16:02:48
    ============================================================ */
 
 window.CONTENU = {
@@ -18,17 +18,7 @@ window.CONTENU = {
   "textes": {},
   "videos": [],
   "audios": [],
-  "boutique": [
-    {
-      "titre": "Lakhasaye",
-      "description": "Lakhasaye en coton",
-      "prix": "35€",
-      "categorie": "Lakhasaye",
-      "disponible": "oui",
-      "whatsapp": "0678340197",
-      "image": "medias/images/img_3658.jpeg"
-    }
-  ],
+  "boutique": [],
   "evenements": [],
   "actualites": [
     {
