@@ -211,12 +211,31 @@ function prixLisible(v) {
   return n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' FCFA';
 }
 
-/** Lien de commande WhatsApp, pré-rempli avec le nom de l'article. */
+/* Taux de conversion franc CFA → euro.
+   Il est FIXE par traité depuis 1999 : 1 € = 655,957 FCFA.
+   Il ne bouge pas, la conversion se fait donc sans service extérieur. */
+const FCFA_PAR_EURO = 655.957;
+
+/** Équivalent en euros : « ≈ 19 € », ou « ≈ 0,76 € » pour les petits montants. */
+function prixEnEuros(v) {
+  const n = Number(String(v).replace(/[^0-9]/g, '')) || 0;
+  if (!n) return '';
+  const e = n / FCFA_PAR_EURO;
+  const texte = e >= 10 ? Math.round(e).toLocaleString('fr-FR')
+                        : e.toFixed(2).replace('.', ',');
+  return `≈ ${texte} €`;
+}
+
+/* Lien de commande WhatsApp, pré-rempli avec le nom de l'article.
+   Chaque article peut porter son propre numéro — utile quand plusieurs
+   personnes de la dahira vendent. À défaut, on prend le numéro général. */
 function lienCommande(article) {
-  const num = String(DATA.site.whatsapp || '').replace(/[^0-9]/g, '');
+  const num = String(article.whatsapp || DATA.site.whatsapp || '').replace(/[^0-9]/g, '');
   if (!num) return null;
-  const texte = `Asalaa maalekum. Je souhaite commander : ${article.titre}` +
-                (article.prix ? ` (${prixLisible(article.prix)})` : '') + '.';
+  const prix = article.prix
+    ? ` (${prixLisible(article.prix)} — ${prixEnEuros(article.prix)})`
+    : '';
+  const texte = `Asalaa maalekum. Je souhaite commander : ${article.titre}${prix}.`;
   return `https://wa.me/${num}?text=${encodeURIComponent(texte)}`;
 }
 
@@ -233,7 +252,8 @@ function carteArticle(a, i) {
       <h3>${esc(a.titre)}</h3>
       ${a.description ? `<p>${esc(a.description)}</p>` : ''}
       <div class="article__pied">
-        ${a.prix ? `<span class="article__prix">${esc(prixLisible(a.prix))}</span>` : ''}
+        ${a.prix ? `<span class="article__prix">${esc(prixLisible(a.prix))}
+            <small class="article__euros">${esc(prixEnEuros(a.prix))}</small></span>` : ''}
         ${epuise
           ? `<span class="article__epuise">Épuisé</span>`
           : lien
@@ -241,7 +261,10 @@ function carteArticle(a, i) {
                   target="_blank" rel="noopener">Commander</a>`
             : ''}
       </div>
-      ${a.categorie ? `<div class="carte__pied"><span class="etiquette">${esc(a.categorie)}</span></div>` : ''}
+      ${a.categorie || a.vendeur ? `<div class="carte__pied">
+        ${a.categorie ? `<span class="etiquette">${esc(a.categorie)}</span>` : ''}
+        ${a.vendeur ? `<span class="meta">Vendu par ${esc(a.vendeur)}</span>` : ''}
+      </div>` : ''}
     </div>
   </article>`;
 }
@@ -360,15 +383,18 @@ const pages = {
       .map((a, i) => ({ a, i }))
       .filter(({ a }) => (cat === 'Tout' || a.categorie === cat) && correspond(a, recherche));
 
-    const sansNumero = !DATA.site.whatsapp;
+    // On n'alerte que si des articles se retrouvent réellement sans contact.
+    const orphelins = DATA.boutique.filter(a => !a.whatsapp && !DATA.site.whatsapp).length;
 
     return `
     <div class="page-tete">
       <h1>Boutique</h1>
       <p>Articles proposés par la dahira. La commande se fait par WhatsApp.</p>
     </div>
-    ${sansNumero && DATA.boutique.length ? `<div class="avis">
-      Aucun numéro WhatsApp n'est renseigné : le bouton « Commander » reste caché.
+    ${orphelins ? `<div class="avis">
+      ${orphelins} article${orphelins > 1 ? 's n\'ont' : " n'a"} aucun numéro WhatsApp :
+      le bouton « Commander » y reste caché. Renseigne un numéro général,
+      ou un numéro propre à ces articles.
     </div>` : ''}
     ${barreFiltres('boutique', DATA.boutique)}
     ${liste.length

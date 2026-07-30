@@ -75,11 +75,17 @@ const SECTIONS = {
       { cle: 'titre', label: "Nom de l'article", type: 'texte', requis: true },
       { cle: 'description', label: 'Description', type: 'zone' },
       { cle: 'prix', label: 'Prix en FCFA', type: 'texte',
-        aide: 'Chiffres seulement. Exemple : 12500 — affiché « 12 500 FCFA ».' },
+        aide: "Chiffres seulement. Exemple : 12500 — affiché « 12 500 FCFA » " +
+              "avec l'équivalent en euros calculé automatiquement (≈ 19 €)." },
       { cle: 'categorie', label: 'Catégorie', type: 'texte', liste: true,
         aide: 'Ex. : Livres, Chapelets, Tissus, Khassaïdes imprimés.' },
       { cle: 'disponible', label: 'Disponible ?', type: 'choix',
         options: ['oui', 'non'], aide: '« non » affiche « Épuisé » et masque le bouton.' },
+      { cle: 'whatsapp', label: 'Numéro WhatsApp du vendeur', type: 'texte',
+        aide: "Facultatif. Format 221771234567. Laisse vide pour utiliser " +
+              "le numéro général de la boutique." },
+      { cle: 'vendeur', label: 'Nom du vendeur', type: 'texte',
+        aide: 'Facultatif. Affiché sous le prix.' },
       { cle: 'image', label: 'Photo', type: 'media', accept: 'image/*',
         dossier: 'medias/images', aide: 'Photo carrée de préférence.' }
     ]
