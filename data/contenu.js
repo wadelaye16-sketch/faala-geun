@@ -1,8 +1,6 @@
-﻿/* ============================================================
-   Contenu de l'application Touba Média.
+/* ============================================================
+   Contenu de l'application FAALA GEUN.
    Fichier produit par l'espace de gestion (admin.html).
-   Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 20:30:53
    ============================================================ */
 
 window.CONTENU = {
@@ -26,7 +24,18 @@ window.CONTENU = {
       "fichier": "https://youtu.be/0KTxp746pCU?is=Kqxd4kTdio9T38Gh"
     }
   ],
-  "boutique": [],
+  "boutique": [
+    {
+      "titre": "Lakhasaye",
+      "prix": "35",
+      "devise": "euro",
+      "categorie": "Lakhasay",
+      "disponible": "oui",
+      "whatsapp": "33678340197",
+      "vendeur": "Ablaye wade",
+      "image": "medias/images/img_3658.jpeg"
+    }
+  ],
   "evenements": [],
   "actualites": [
     {

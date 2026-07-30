@@ -61,9 +61,10 @@ const SECTIONS = {
         aide: 'Crée un bouton de filtre dans l\'app. Ex. : Khassaïda, Conférence, Événement.' },
       { cle: 'date', label: 'Date', type: 'date' },
       { cle: 'duree', label: 'Durée', type: 'texte', aide: 'Ex. : 18:24' },
-      { cle: 'fichier', label: 'Fichier vidéo', type: 'media', accept: 'video/*',
-        dossier: 'medias/videos', requis: true,
-        aide: 'Choisis un fichier MP4 — ou colle un lien YouTube.' },
+      { cle: 'fichier', label: 'Fichier vidéo', type: 'media', requis: true,
+        accept: 'video/*,.mp4,.mov,.m4v,.webm',
+        dossier: 'medias/videos',
+        aide: 'MP4 ou MOV filmé au téléphone — ou colle un lien YouTube.' },
       { cle: 'affiche', label: 'Image de couverture', type: 'media', accept: 'image/*',
         dossier: 'medias/images', aide: 'Facultatif. Une photo en 1280×720 pixels convient bien.' }
     ]
@@ -79,11 +80,15 @@ const SECTIONS = {
       { cle: 'artiste', label: 'Interprète', type: 'texte', aide: 'Ex. : Kurel de la dahira' },
       { cle: 'categorie', label: 'Catégorie', type: 'texte', liste: true },
       { cle: 'duree', label: 'Durée', type: 'texte', aide: 'Ex. : 12:30' },
-      { cle: 'fichier', label: 'Fichier audio', type: 'media', accept: 'audio/*',
-        dossier: 'medias/audios', requis: true,
-        aide: "Choisis un fichier MP3 — ou colle le lien direct d'un audio hébergé " +
-              "ailleurs. Depuis le téléphone, la limite est de 32 Mo ; depuis " +
-              "l'ordinateur avec GESTION.bat, il n'y en a pas." },
+      /* Liste volontairement large : sur iPhone, « audio/* » seul masque
+         les mémos vocaux et les fichiers rangés dans Fichiers. On accepte
+         donc aussi les extensions et le MP4, dont on ne lira que le son. */
+      { cle: 'fichier', label: 'Fichier audio', type: 'media', requis: true,
+        accept: 'audio/*,video/mp4,.mp3,.m4a,.aac,.wav,.ogg,.opus,.mp4,.mov',
+        dossier: 'medias/audios',
+        aide: "MP3, M4A (mémo vocal iPhone), MP4, WAV… ou colle un lien YouTube " +
+              "ou un lien direct. Depuis le téléphone la limite est de 32 Mo ; " +
+              "depuis l'ordinateur avec GESTION.bat, il n'y en a pas." },
       { cle: 'affiche', label: 'Pochette', type: 'media', accept: 'image/*',
         dossier: 'medias/images', aide: 'Facultatif.' }
     ]

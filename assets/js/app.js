@@ -170,12 +170,13 @@ function carteVideo(v, i) {
 
 function lignePiste(a, i) {
   const enCours = lecteur.index === i && !audio.paused;
+  const surYoutube = !!youtube(a.fichier);
   const cover = a.affiche
     ? `<img class="piste__cover" src="${esc(a.affiche)}" alt="" loading="lazy">`
     : `<span class="piste__cover"></span>`;
   return `
   <button class="piste ${lecteur.index === i ? 'joue' : ''}" data-piste="${i}">
-    <span class="piste__num">${enCours ? '♪' : i + 1}</span>
+    <span class="piste__num">${surYoutube ? '▶' : enCours ? '♪' : i + 1}</span>
     ${cover}
     <span class="piste__txt">
       <strong>${esc(a.titre)}</strong>
@@ -565,6 +566,14 @@ function jouerPiste(i) {
   const a = DATA.audios[i];
   if (!a || !a.fichier) return;
 
+  /* Une adresse YouTube n'est pas un fichier son : l'élément audio ne sait
+     pas la lire. On l'ouvre donc dans le lecteur vidéo, qui sait le faire. */
+  if (youtube(a.fichier)) {
+    audio.pause();
+    ouvrirMedia({ titre: a.titre, description: a.artiste || '', fichier: a.fichier });
+    return;
+  }
+
   if (lecteur.index === i) {           // même piste : bascule lecture/pause
     audio.paused ? audio.play().catch(() => {}) : audio.pause();
     return;
@@ -651,8 +660,8 @@ document.getElementById('player-close').onclick = () => {
 const modal = document.getElementById('modal');
 const modalMedia = document.getElementById('modal-media');
 
-function ouvrirVideo(i) {
-  const v = DATA.videos[i];
+/** Ouvre le lecteur plein écran, pour une vidéo comme pour un lien YouTube. */
+function ouvrirMedia(v) {
   if (!v) return;
 
   audio.pause();
@@ -668,6 +677,8 @@ function ouvrirVideo(i) {
   modal.hidden = false;
   document.body.style.overflow = 'hidden';
 }
+
+function ouvrirVideo(i) { ouvrirMedia(DATA.videos[i]); }
 
 function fermerVideo() {
   modalMedia.innerHTML = '';       // stoppe la lecture
