@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 22:30:44
+   Dernière mise à jour : 30/07/2026 22:33:15
    ============================================================ */
 
 window.CONTENU = {
@@ -22,20 +22,22 @@ window.CONTENU = {
       "titre": "nourrou darayni",
       "artiste": "serigne saliou aissy",
       "categorie": "rajass",
-      "fichier": "medias/audios/nourou_darayni_rajass_serigne_saliou_aissy_xidmatv_extr_nourou_d.mp3",
-      "affiche": "medias/images/img_3662.jpeg"
+      "fichier": "medias/audios/nourou_darayni_rajass_serigne_saliou_aissy_xidmatv_extr_nourou_d.mp3"
     },
     {
       "titre": "JAZBU",
       "artiste": "NOURROU DARAYNI THIES",
       "categorie": "Khassida",
-      "fichier": "medias/audios/ht-k1-thies-j23-jazbu-s-mbaye-diop-k1-ht-thies-2.mp3",
-      "affiche": "medias/images/img_3659.jpeg"
+      "fichier": "medias/audios/ht-k1-thies-j23-jazbu-s-mbaye-diop-k1-ht-thies-2.mp3"
     }
   ],
   "boutique": [],
   "evenements": [],
   "actualites": [
+    {
+      "titre": "Grand Magal de Touba",
+      "date": "2026-08-02"
+    },
     {
       "titre": "Bienvenue sur l'application de la communauté",
       "date": "2026-07-25",
