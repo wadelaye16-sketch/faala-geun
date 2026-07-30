@@ -239,14 +239,37 @@ function prixLisible(v) {
    Il ne bouge pas, la conversion se fait donc sans service extérieur. */
 const FCFA_PAR_EURO = 655.957;
 
-/** Équivalent en euros : « ≈ 19 € », ou « ≈ 0,76 € » pour les petits montants. */
+/** Montant en chiffres, ou 0 si la valeur n'en contient aucun. */
+function montant(v) {
+  return Number(String(v).replace(/[^0-9]/g, '')) || 0;
+}
+
+function euroLisible(e) {
+  return (e >= 10 ? Math.round(e).toLocaleString('fr-FR')
+                  : e.toFixed(2).replace('.', ',')) + ' €';
+}
+
+/** Équivalent en euros d'un montant en FCFA : « ≈ 19 € ». */
 function prixEnEuros(v) {
-  const n = Number(String(v).replace(/[^0-9]/g, '')) || 0;
-  if (!n) return '';
-  const e = n / FCFA_PAR_EURO;
-  const texte = e >= 10 ? Math.round(e).toLocaleString('fr-FR')
-                        : e.toFixed(2).replace('.', ',');
-  return `≈ ${texte} €`;
+  const n = montant(v);
+  return n ? '≈ ' + euroLisible(n / FCFA_PAR_EURO) : '';
+}
+
+/* Comment afficher le prix d'un article.
+   La devise choisie dit dans quelle monnaie le prix a été saisi,
+   et ce qui doit apparaître à l'écran. */
+function affichagePrix(a) {
+  const n = montant(a.prix);
+  if (!n) return null;
+  const devise = a.devise || 'FCFA + euro';
+
+  if (devise === 'euro') {
+    return { principal: euroLisible(n), secondaire: '' };
+  }
+  if (devise === 'FCFA') {
+    return { principal: prixLisible(n), secondaire: '' };
+  }
+  return { principal: prixLisible(n), secondaire: prixEnEuros(n) };
 }
 
 /* Lien de commande WhatsApp, pré-rempli avec le nom de l'article.
@@ -255,15 +278,15 @@ function prixEnEuros(v) {
 function lienCommande(article) {
   const num = String(article.whatsapp || DATA.site.whatsapp || '').replace(/[^0-9]/g, '');
   if (!num) return null;
-  const prix = article.prix
-    ? ` (${prixLisible(article.prix)} — ${prixEnEuros(article.prix)})`
-    : '';
+  const p = affichagePrix(article);
+  const prix = p ? ` (${p.principal}${p.secondaire ? ' — ' + p.secondaire : ''})` : '';
   const texte = `Asalaa maalekum. Je souhaite commander : ${article.titre}${prix}.`;
   return `https://wa.me/${num}?text=${encodeURIComponent(texte)}`;
 }
 
 function carteArticle(a, i) {
   const lien = lienCommande(a);
+  const prix = affichagePrix(a);
   const epuise = String(a.disponible).toLowerCase() === 'non';
 
   return `
@@ -275,8 +298,8 @@ function carteArticle(a, i) {
       <h3>${esc(a.titre)}</h3>
       ${a.description ? `<p>${esc(a.description)}</p>` : ''}
       <div class="article__pied">
-        ${a.prix ? `<span class="article__prix">${esc(prixLisible(a.prix))}
-            <small class="article__euros">${esc(prixEnEuros(a.prix))}</small></span>` : ''}
+        ${prix ? `<span class="article__prix">${esc(prix.principal)}
+            ${prix.secondaire ? `<small class="article__euros">${esc(prix.secondaire)}</small>` : ''}</span>` : ''}
         ${epuise
           ? `<span class="article__epuise">Épuisé</span>`
           : lien

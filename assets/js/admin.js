@@ -94,9 +94,12 @@ const SECTIONS = {
     champs: [
       { cle: 'titre', label: "Nom de l'article", type: 'texte', requis: true },
       { cle: 'description', label: 'Description', type: 'zone' },
-      { cle: 'prix', label: 'Prix en FCFA', type: 'texte',
-        aide: "Chiffres seulement. Exemple : 12500 — affiché « 12 500 FCFA » " +
-              "avec l'équivalent en euros calculé automatiquement (≈ 19 €)." },
+      { cle: 'prix', label: 'Prix', type: 'texte',
+        aide: 'Chiffres seulement, dans la monnaie choisie juste en dessous. Exemple : 12500' },
+      { cle: 'devise', label: 'Monnaie affichée', type: 'choix',
+        options: ['FCFA + euro', 'FCFA', 'euro'],
+        aide: "« FCFA + euro » : tu saisis en FCFA, l'euro est calculé et affiché en petit. " +
+              "« FCFA » : rien que le franc. « euro » : tu saisis directement en euros." },
       { cle: 'categorie', label: 'Catégorie', type: 'texte', liste: true,
         aide: 'Ex. : Livres, Chapelets, Tissus, Khassaïdes imprimés.' },
       { cle: 'disponible', label: 'Disponible ?', type: 'choix',
