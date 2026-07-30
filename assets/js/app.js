@@ -13,7 +13,7 @@ const MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
 const app = document.getElementById('app');
 
 /** Données chargées depuis data/contenu.json */
-let DATA = { site: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
+let DATA = { site: {}, textes: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
 
 /** Filtre de catégorie actif, par page */
 const filtreActif = { videos: 'Tout', musiques: 'Tout', boutique: 'Tout' };
@@ -64,6 +64,28 @@ function correspond(item, terme) {
     .some(k => String(item[k] || '').toLowerCase().includes(t));
 }
 
+/* Titre et sous-titre d'une page.
+   Tant que rien n'a été écrit, on propose un texte par défaut. Dès que
+   la rubrique « Textes des pages » a été enregistrée une fois, c'est
+   toi qui décides — y compris de laisser un sous-titre vide. */
+function texteDe(page, titreDefaut, sousDefaut) {
+  const t = DATA.textes || {};
+  const lire = (cle, defaut) => (t[cle] !== undefined ? t[cle] : defaut);
+  return {
+    titre: lire(page + 'Titre', titreDefaut) || titreDefaut,
+    sous: lire(page + 'Sous', sousDefaut)
+  };
+}
+
+/** Bloc de tête d'une page, avec titre et sous-titre modifiables. */
+function enTete(page, titreDefaut, sousDefaut) {
+  const { titre, sous } = texteDe(page, titreDefaut, sousDefaut);
+  return `<div class="page-tete">
+    <h1>${esc(titre)}</h1>
+    ${sous ? `<p>${esc(sous)}</p>` : ''}
+  </div>`;
+}
+
 /** Liste des catégories présentes dans une collection. */
 function categories(liste) {
   return ['Tout', ...new Set(liste.map(x => x.categorie).filter(Boolean))];
@@ -100,6 +122,7 @@ function chargerDonnees() {
 
   DATA = {
     site: brut.site || {},
+    textes: brut.textes || {},
     videos: brut.videos || [],
     audios: brut.audios || [],
     boutique: brut.boutique || [],
@@ -344,10 +367,7 @@ const pages = {
       .sort((a, b) => parDateDesc(a.v, b.v));
 
     return `
-    <div class="page-tete">
-      <h1>Vidéos</h1>
-      <p>Khassaïdes, conférences et moments forts de la communauté.</p>
-    </div>
+    ${enTete('videos', 'Vidéos', 'Khassaïdes, conférences et moments forts de la communauté.')}
     ${barreFiltres('videos', DATA.videos)}
     ${liste.length
       ? `<div class="grille">${liste.map(({ v, i }) => carteVideo(v, i)).join('')}</div>`
@@ -364,10 +384,7 @@ const pages = {
       .filter(({ a }) => (cat === 'Tout' || a.categorie === cat) && correspond(a, recherche));
 
     return `
-    <div class="page-tete">
-      <h1>Musiques & Khassaïdes</h1>
-      <p>Chants religieux, récitations et enregistrements audio.</p>
-    </div>
+    ${enTete('musiques', 'Musiques & Khassaïdes', 'Chants religieux, récitations et enregistrements audio.')}
     ${barreFiltres('musiques', DATA.audios)}
     ${liste.length
       ? `<div class="liste-pistes">${liste.map(({ a, i }) => lignePiste(a, i)).join('')}</div>`
@@ -387,10 +404,7 @@ const pages = {
     const orphelins = DATA.boutique.filter(a => !a.whatsapp && !DATA.site.whatsapp).length;
 
     return `
-    <div class="page-tete">
-      <h1>Boutique</h1>
-      <p>Articles proposés par la dahira. La commande se fait par WhatsApp.</p>
-    </div>
+    ${enTete('boutique', 'Boutique', 'La commande se fait par WhatsApp.')}
     ${orphelins ? `<div class="avis">
       ${orphelins} article${orphelins > 1 ? 's n\'ont' : " n'a"} aucun numéro WhatsApp :
       le bouton « Commander » y reste caché. Renseigne un numéro général,
@@ -414,10 +428,7 @@ const pages = {
                        .sort(parDateDesc);
 
     return `
-    <div class="page-tete">
-      <h1>Événements</h1>
-      <p>Magal, gamous, ziars et rencontres de la communauté.</p>
-    </div>
+    ${enTete('evenements', 'Événements', 'Magal, gamous, ziars et rencontres de la communauté.')}
     ${avenir.length ? `<section class="section">
       <div class="section__tete"><h2>À venir</h2></div>
       ${avenir.map(carteEvent).join('')}
@@ -438,10 +449,7 @@ const pages = {
       .sort((a, b) => parDateDesc(a.n, b.n));
 
     return `
-    <div class="page-tete">
-      <h1>Actualités</h1>
-      <p>Annonces et nouvelles de la communauté.</p>
-    </div>
+    ${enTete('actualites', 'Actualités', 'Annonces et nouvelles de la communauté.')}
     ${liste.length
       ? liste.map(({ n, i }) => carteActu(n, i)).join('')
       : messageVide('Aucune actualité pour le moment.')}`;

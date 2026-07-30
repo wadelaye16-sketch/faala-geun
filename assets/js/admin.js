@@ -29,6 +29,26 @@ const SECTIONS = {
     ]
   },
 
+  textes: {
+    titre: 'Textes des pages',
+    sousTitre: "Les titres et phrases affichés en haut de chaque rubrique. " +
+               "Laisse vide pour n'afficher aucune phrase.",
+    objet: true,
+    cible: 'textes',
+    champs: [
+      { cle: 'videosTitre', label: 'Vidéos — titre', type: 'texte', defaut: 'Vidéos' },
+      { cle: 'videosSous', label: 'Vidéos — phrase', type: 'texte', defaut: 'Khassaïdes, conférences et moments forts de la communauté.' },
+      { cle: 'musiquesTitre', label: 'Musiques — titre', type: 'texte', defaut: 'Musiques & Khassaïdes' },
+      { cle: 'musiquesSous', label: 'Musiques — phrase', type: 'texte', defaut: 'Chants religieux, récitations et enregistrements audio.' },
+      { cle: 'boutiqueTitre', label: 'Boutique — titre', type: 'texte', defaut: 'Boutique' },
+      { cle: 'boutiqueSous', label: 'Boutique — phrase', type: 'texte', defaut: 'La commande se fait par WhatsApp.' },
+      { cle: 'evenementsTitre', label: 'Événements — titre', type: 'texte', defaut: 'Événements' },
+      { cle: 'evenementsSous', label: 'Événements — phrase', type: 'texte', defaut: 'Magal, gamous, ziars et rencontres de la communauté.' },
+      { cle: 'actualitesTitre', label: 'Actualités — titre', type: 'texte', defaut: 'Actualités' },
+      { cle: 'actualitesSous', label: 'Actualités — phrase', type: 'texte', defaut: 'Annonces et nouvelles de la communauté.' }
+    ]
+  },
+
   videos: {
     titre: 'Vidéos',
     sousTitre: 'Khassaïdes, conférences et moments forts de la communauté.',
@@ -125,7 +145,7 @@ const SECTIONS = {
    État
    ------------------------------------------------------------ */
 
-const VIDE = { site: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
+const VIDE = { site: {}, textes: {}, videos: [], audios: [], boutique: [], evenements: [], actualites: [] };
 
 /** Copie de travail du contenu. */
 let D = fusionner(window.CONTENU);
@@ -140,6 +160,7 @@ function fusionner(brut) {
   const d = JSON.parse(JSON.stringify(VIDE));
   if (brut && typeof brut === 'object') {
     d.site = { ...brut.site };
+    d.textes = { ...brut.textes };
     for (const k of ['videos', 'audios', 'boutique', 'evenements', 'actualites']) {
       if (Array.isArray(brut[k])) d[k] = JSON.parse(JSON.stringify(brut[k]));
     }
@@ -609,17 +630,20 @@ function afficherSection(nom) {
   const panneau = $('#panneau');
 
   if (conf.objet) {
+    const cible = conf.cible || 'site';
+    if (!D[cible]) D[cible] = {};
+
     panneau.innerHTML = `
       <div class="panneau__tete">
         <div><h1>${esc(conf.titre)}</h1><p>${esc(conf.sousTitre)}</p></div>
       </div>
       <form id="form-site" class="fiche" style="display:block; padding:20px;">
-        ${conf.champs.map(c => champHTML(c, D.site[c.cle] ?? '')).join('')}
+        ${conf.champs.map(c => champHTML(c, D[cible][c.cle] ?? c.defaut ?? '')).join('')}
         <button type="submit" class="bouton bouton--or">Valider ces informations</button>
       </form>`;
     $('#form-site').addEventListener('submit', e => {
       e.preventDefault();
-      conf.champs.forEach(c => { D.site[c.cle] = $('#champ-' + c.cle).value.trim(); });
+      conf.champs.forEach(c => { D[cible][c.cle] = $('#champ-' + c.cle).value.trim(); });
       marquerModifie();
       annoncer('Informations mises à jour — pense à cliquer sur Enregistrer.');
     });
