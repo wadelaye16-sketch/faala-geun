@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 19:26:58
+   Dernière mise à jour : 30/07/2026 19:28:58
    ============================================================ */
 
 window.CONTENU = {
