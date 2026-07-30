@@ -195,6 +195,27 @@ function nettoyerNom(nom) {
 
 function estLien(v) { return /^https?:\/\//i.test(String(v || '')); }
 
+/* Vérifie un numéro WhatsApp.
+   WhatsApp n'accepte que le format international : indicatif du pays,
+   puis le numéro SANS son zéro initial. « 0678340197 » ne mène nulle part,
+   il faut « 33678340197 ». Autant le dire avant d'enregistrer. */
+function problemeNumero(v) {
+  const n = String(v || '').replace(/[^0-9]/g, '');
+  if (!n) return null;
+  if (n.startsWith('0')) {
+    return `Le numéro « ${v} » commence par 0 : WhatsApp ne pourra pas l'ouvrir.\n\n` +
+           `Retire le 0 et mets l'indicatif du pays devant :\n` +
+           `• France : 33${n.slice(1)}\n` +
+           `• Sénégal : 221${n.slice(1)}\n\n` +
+           `Corrige-le, sinon le bouton « Commander » ne fonctionnera pas.`;
+  }
+  if (n.length < 8 || n.length > 15) {
+    return `Le numéro « ${v} » a ${n.length} chiffres : ce n'est pas un numéro valide.\n\n` +
+           `Format attendu : indicatif du pays + numéro, par exemple 221771234567.`;
+  }
+  return null;
+}
+
 let minuteurMessage;
 function annoncer(texte, genre = '') {
   const el = $('#message');
@@ -646,6 +667,9 @@ function afficherSection(nom) {
       </form>`;
     $('#form-site').addEventListener('submit', e => {
       e.preventDefault();
+      const numero = $('#champ-whatsapp')?.value.trim();
+      const souci = problemeNumero(numero);
+      if (souci) { alert(souci); $('#champ-whatsapp').focus(); return; }
       conf.champs.forEach(c => { D[cible][c.cle] = $('#champ-' + c.cle).value.trim(); });
       marquerModifie();
       annoncer('Informations mises à jour — pense à cliquer sur Enregistrer.');
@@ -863,6 +887,10 @@ $('#formulaire').addEventListener('submit', e => {
   }
 
   if (manquant) { annoncer(`Le champ « ${manquant} » est obligatoire.`, 'erreur'); return; }
+
+  // Un numéro mal formé rend le bouton « Commander » inutilisable.
+  const souci = problemeNumero(item.whatsapp);
+  if (souci) { alert(souci); document.getElementById('champ-whatsapp')?.focus(); return; }
 
   if (indexEdite === null) D[sectionActive].unshift(item);
   else D[sectionActive][indexEdite] = item;
