@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
@@ -25,7 +25,7 @@ window.CONTENU = {
       "devise": "euro",
       "categorie": "Lakhasay",
       "disponible": "oui",
-      "whatsapp": "0678340197",
+      "whatsapp": "33678340197",
       "vendeur": "Ablaye wade",
       "image": "medias/images/img_3658.jpeg"
     }
