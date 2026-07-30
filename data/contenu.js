@@ -2,14 +2,14 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 27/07/2026 15:36:04
+   Dernière mise à jour : 30/07/2026 15:05:47
    ============================================================ */
 
 window.CONTENU = {
   "site": {
     "nom": "FAALA GEUN",
     "slogan": "Communauté Mouride",
-    "couverture": "",
+    "couverture": "medias/images/img_9045.jpeg",
     "titreAccueil": "Asalaa maalekum, bienvenue",
     "texteAccueil": "L'espace de la communauté mouride : khassaïdes, conférences, chants religieux, événements et actualités — pour tous les mourides",
     "pied": "Serigne Touba, Dieredieuf"
