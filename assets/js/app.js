@@ -610,7 +610,12 @@ function majPistes() {
     const actif = i === lecteur.index;
     el.classList.toggle('joue', actif);
     const num = el.querySelector('.piste__num');
-    if (num) num.textContent = (actif && !audio.paused) ? '♪' : i + 1;
+    // Le triangle des pistes YouTube doit survivre au rafraîchissement,
+    // sinon le repère posé à l'affichage disparaît aussitôt.
+    if (num) {
+      num.textContent = youtube(DATA.audios[i]?.fichier) ? '▶'
+                      : (actif && !audio.paused) ? '♪' : i + 1;
+    }
   });
 }
 
