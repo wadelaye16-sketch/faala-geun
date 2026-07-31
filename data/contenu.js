@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 31/07/2026 21:04:44
+   Dernière mise à jour : 31/07/2026 21:07:14
    ============================================================ */
 
 window.CONTENU = {
@@ -18,6 +18,13 @@ window.CONTENU = {
   "textes": {},
   "videos": [],
   "audios": [
+    {
+      "titre": "NIANOU SERIGNE CHEIKH FALL BAYOU GOOR",
+      "artiste": "BAYE DJIBY DIOUF",
+      "categorie": "SAM FALL",
+      "fichier": "medias/audios/baye-djiby-nianou-s-c-fall.mp3",
+      "affiche": "medias/images/6010171591448268027_121.jpg"
+    },
     {
       "titre": "GAMOU THIES 1980",
       "artiste": "BAYE DJIBY DIOUF",
