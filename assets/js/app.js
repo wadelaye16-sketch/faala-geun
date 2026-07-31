@@ -560,7 +560,14 @@ const elSeek = document.getElementById('player-seek');
 const icPlay = document.getElementById('ic-play');
 const icPause = document.getElementById('ic-pause');
 
-const lecteur = { index: -1 };
+/* État du lecteur.
+   repetition : 'aucune' | 'toutes' | 'une'
+   Les deux réglages sont retenus d'une visite à l'autre. */
+const lecteur = {
+  index: -1,
+  aleatoire: (() => { try { return localStorage.getItem('aleatoire') === 'oui'; } catch { return false; } })(),
+  repetition: (() => { try { return localStorage.getItem('repetition') || 'aucune'; } catch { return 'aucune'; } })()
+};
 
 function jouerPiste(i) {
   const a = DATA.audios[i];
@@ -584,23 +591,78 @@ function jouerPiste(i) {
   audio.play().catch(err => console.warn('Lecture impossible :', err));
 
   elPlayer.hidden = false;
+  document.body.classList.add('avec-lecteur');
   document.getElementById('player-title').textContent = a.titre || '';
   document.getElementById('player-artist').textContent = a.artiste || a.categorie || '';
   document.getElementById('player-cover').src = a.affiche || 'assets/icons/icon.svg';
 
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: a.titre || '',
-      artist: a.artiste || DATA.site.nom || '',
-      album: a.categorie || ''
-    });
-  }
+  annoncerAuTelephone(a);
   majPistes();
 }
 
+/* Fiche transmise au téléphone : c'est elle qui s'affiche sur l'écran
+   verrouillé, avec la pochette, et qui alimente les boutons du système. */
+function annoncerAuTelephone(a) {
+  if (!('mediaSession' in navigator)) return;
+
+  const pochette = a.affiche || 'assets/icons/icon-512.png';
+  const absolue = new URL(pochette, location.href).href;
+  const type = /\.png$/i.test(pochette) ? 'image/png'
+             : /\.svg$/i.test(pochette) ? 'image/svg+xml' : 'image/jpeg';
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: a.titre || '',
+    artist: a.artiste || DATA.site.nom || '',
+    album: a.categorie || DATA.site.nom || '',
+    // Plusieurs tailles : chaque téléphone choisit celle qui lui convient.
+    artwork: [96, 192, 256, 384, 512].map(t => ({
+      src: absolue, sizes: `${t}x${t}`, type
+    }))
+  });
+
+  const poser = (action, fn) => {
+    try { navigator.mediaSession.setActionHandler(action, fn); } catch {}
+  };
+  poser('play', () => audio.play().catch(() => {}));
+  poser('pause', () => audio.pause());
+  poser('previoustrack', () => pisteSuivante(-1));
+  poser('nexttrack', () => pisteSuivante(1));
+  poser('seekbackward', e => { audio.currentTime = Math.max(0, audio.currentTime - (e.seekOffset || 10)); });
+  poser('seekforward', e => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + (e.seekOffset || 10)); });
+  poser('seekto', e => { if (e.fastSeek && audio.fastSeek) audio.fastSeek(e.seekTime); else audio.currentTime = e.seekTime; });
+}
+
+/* Passe à la piste suivante ou précédente.
+   En lecture aléatoire on tire une autre piste au hasard ; sinon on suit
+   l'ordre de la liste, en revenant au début une fois arrivé au bout. */
 function pisteSuivante(pas) {
-  if (!DATA.audios.length) return;
-  jouerPiste((lecteur.index + pas + DATA.audios.length) % DATA.audios.length);
+  const n = DATA.audios.length;
+  if (!n) return;
+
+  if (lecteur.aleatoire && n > 1) {
+    let tire;
+    do { tire = Math.floor(Math.random() * n); } while (tire === lecteur.index);
+    return jouerPiste(tire);
+  }
+  jouerPiste((lecteur.index + pas + n) % n);
+}
+
+/** Enchaînement à la fin d'une piste, selon le mode de répétition. */
+function pisteTerminee() {
+  const n = DATA.audios.length;
+
+  if (lecteur.repetition === 'une') {     // la même piste, en boucle
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+    return;
+  }
+
+  const derniere = lecteur.index >= n - 1;
+  if (derniere && lecteur.repetition !== 'toutes' && !lecteur.aleatoire) {
+    audio.pause();                         // fin de la liste : on s'arrête
+    return;
+  }
+  pisteSuivante(1);
 }
 
 /** Rafraîchit l'état visuel des pistes sans re-rendre toute la page. */
@@ -619,15 +681,28 @@ function majPistes() {
   });
 }
 
+/* Un élément SVG ne reflète pas la propriété « hidden » vers son attribut :
+   écrire icPlay.hidden = true ne cache rien du tout. Il faut donc poser
+   et retirer l'attribut à la main. C'est ce qui empêchait le symbole
+   « pause » d'apparaître pendant la lecture. */
+function montrer(svg, visible) {
+  if (visible) svg.removeAttribute('hidden');
+  else svg.setAttribute('hidden', '');
+}
+
 function majIcones() {
-  icPlay.hidden = !audio.paused;
-  icPause.hidden = audio.paused;
+  montrer(icPlay, audio.paused);
+  montrer(icPause, !audio.paused);
+  // L'écran verrouillé du téléphone doit refléter l'état réel.
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = audio.paused ? 'paused' : 'playing';
+  }
   majPistes();
 }
 
 audio.addEventListener('play', majIcones);
 audio.addEventListener('pause', majIcones);
-audio.addEventListener('ended', () => pisteSuivante(1));
+audio.addEventListener('ended', pisteTerminee);
 audio.addEventListener('error', () => {
   document.getElementById('player-artist').textContent = 'Fichier introuvable';
 });
@@ -651,9 +726,67 @@ document.getElementById('player-play').onclick = () =>
 document.getElementById('player-next').onclick = () => pisteSuivante(1);
 document.getElementById('player-prev').onclick = () =>
   audio.currentTime > 3 ? (audio.currentTime = 0) : pisteSuivante(-1);
+
+/* Lecture aléatoire et répétition */
+
+/** Petite bulle de confirmation, le temps de comprendre ce qu'on a activé. */
+let minuteurBulle;
+function messageBref(texte) {
+  let bulle = document.getElementById('bulle');
+  if (!bulle) {
+    bulle = document.createElement('div');
+    bulle.id = 'bulle';
+    bulle.className = 'bulle';
+    bulle.setAttribute('role', 'status');
+    document.body.appendChild(bulle);
+  }
+  bulle.textContent = texte;
+  bulle.hidden = false;
+  clearTimeout(minuteurBulle);
+  minuteurBulle = setTimeout(() => { bulle.hidden = true; }, 2200);
+}
+
+const btnAleatoire = document.getElementById('player-aleatoire');
+const btnBoucle = document.getElementById('player-boucle');
+const marqueUne = document.getElementById('player-boucle-un');
+
+function majModes() {
+  btnAleatoire.setAttribute('aria-pressed', String(lecteur.aleatoire));
+  btnAleatoire.title = lecteur.aleatoire ? 'Lecture aléatoire activée' : 'Lecture aléatoire';
+
+  btnBoucle.setAttribute('aria-pressed', String(lecteur.repetition !== 'aucune'));
+  marqueUne.hidden = lecteur.repetition !== 'une';
+  btnBoucle.title = lecteur.repetition === 'une' ? 'Répéter cette piste'
+                  : lecteur.repetition === 'toutes' ? 'Répéter toute la liste'
+                  : 'Répéter';
+
+  try {
+    localStorage.setItem('aleatoire', lecteur.aleatoire ? 'oui' : 'non');
+    localStorage.setItem('repetition', lecteur.repetition);
+  } catch {}
+}
+
+btnAleatoire.onclick = () => {
+  lecteur.aleatoire = !lecteur.aleatoire;
+  majModes();
+  messageBref(lecteur.aleatoire ? 'Lecture aléatoire activée' : 'Lecture dans l\'ordre');
+};
+
+// Trois positions successives : aucune → toute la liste → une seule piste
+btnBoucle.onclick = () => {
+  lecteur.repetition = lecteur.repetition === 'aucune' ? 'toutes'
+                     : lecteur.repetition === 'toutes' ? 'une' : 'aucune';
+  majModes();
+  messageBref(lecteur.repetition === 'toutes' ? 'Répétition de toute la liste'
+         : lecteur.repetition === 'une' ? 'Répétition de cette piste'
+         : 'Répétition désactivée');
+};
+
+majModes();
 document.getElementById('player-close').onclick = () => {
   audio.pause();
   elPlayer.hidden = true;
+  document.body.classList.remove('avec-lecteur');
   lecteur.index = -1;
   majPistes();
 };

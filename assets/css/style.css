@@ -348,22 +348,67 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   position: fixed; left: 0; right: 0;
   bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   z-index: 55;
-  display: flex; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; gap: 8px;
   background: var(--surface); border-top: 1px solid var(--bordure);
   box-shadow: 0 -6px 24px rgba(6,52,38,.16);
-  padding: 9px 12px;
+  padding: 10px 14px 12px;
 }
-.player__cover { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; flex: none; background: var(--vert-100); }
+
+.player__haut { display: flex; align-items: center; gap: 12px; }
+.player__cover {
+  width: 52px; height: 52px; border-radius: 9px; object-fit: cover;
+  flex: none; background: var(--vert-100);
+}
 .player__meta { flex: 1; min-width: 0; }
-.player__meta strong { display: block; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.player__meta small { color: var(--texte-doux); font-size: .78rem; }
-.player__seek { width: 100%; margin: 5px 0 0; accent-color: var(--or-500); height: 4px; }
-.player__time { font-size: .7rem; color: var(--texte-doux); }
-.player__controls { display: flex; align-items: center; gap: 2px; flex: none; }
-.icon-btn--main { background: var(--vert-800); color: #fff; width: 44px; height: 44px; }
+.player__meta strong { display: block; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player__meta small { color: var(--texte-doux); font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+
+/* Barre de progression */
+.player__barre { display: flex; align-items: center; gap: 9px; }
+.player__temps { font-size: .72rem; color: var(--texte-doux); font-variant-numeric: tabular-nums; flex: none; }
+.player__seek {
+  flex: 1; margin: 0; accent-color: var(--or-500); height: 6px; cursor: pointer;
+}
+
+/* Commandes */
+.player__controls { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.icon-btn--main {
+  background: var(--vert-800); color: #fff; width: 54px; height: 54px;
+}
 .icon-btn--main:hover { background: var(--vert-700); }
-.icon-btn--main svg { fill: currentColor; stroke: currentColor; }
-#ic-pause { fill: none; stroke-width: 2.6; }
+.icon-btn--main svg { width: 26px; height: 26px; fill: currentColor; stroke: none; }
+
+/* Les boutons actifs se voient d'un coup d'œil */
+.player__controls .icon-btn[aria-pressed="true"] {
+  background: var(--vert-100); color: var(--vert-800);
+}
+[data-theme="sombre"] .player__controls .icon-btn[aria-pressed="true"] { color: var(--or-300); }
+
+.player__un {
+  position: absolute; right: 4px; bottom: 3px;
+  background: var(--vert-800); color: #fff;
+  font-size: .58rem; font-weight: 800; line-height: 1;
+  padding: 2px 3px; border-radius: 4px;
+}
+#player-boucle { position: relative; }
+
+/* Le lecteur est plus haut qu'avant : sans cette marge, la dernière
+   piste de la liste resterait cachée dessous. */
+body.avec-lecteur { padding-bottom: calc(var(--tabbar-h) + 175px + env(safe-area-inset-bottom)); }
+@media (min-width: 860px) {
+  body.avec-lecteur { padding-bottom: 175px; }
+}
+
+/* Bulle de confirmation des réglages du lecteur */
+.bulle {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--tabbar-h) + 190px + env(safe-area-inset-bottom));
+  z-index: 70;
+  background: var(--vert-900); color: #fff;
+  padding: 10px 18px; border-radius: 999px;
+  font-size: .85rem; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 8px 26px rgba(6,52,38,.35);
+}
 
 /* ---------------- Onglets mobile ---------------- */
 
