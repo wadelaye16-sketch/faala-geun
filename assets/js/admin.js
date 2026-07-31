@@ -1033,6 +1033,24 @@ $('#btn-publier').addEventListener('click', publier);
   if (!serveurActif && location.protocol.startsWith('http')) {
     if (!(await verifierJeton())) { demanderJeton(); return; }
     modeGitHub = true;
+
+    /* On repart du contenu réel du dépôt, jamais de la page publiée :
+       celle-ci peut venir d'un cache, et enregistrer par-dessus
+       effacerait ce qui a été ajouté depuis l'ordinateur. */
+    try {
+      const frais = await contenuFraisDeGitHub();
+      // Si un brouillon vient d'être repris, on ne l'écrase pas :
+      // c'est du travail en cours que l'utilisateur a choisi de garder.
+      if (!modifie && JSON.stringify(fusionner(frais)) !== JSON.stringify(D)) {
+        D = fusionner(frais);
+        annoncer('Contenu à jour récupéré depuis le dépôt.');
+      }
+    } catch (e) {
+      alert("Impossible de relire le contenu à jour :\n" + e.message +
+            "\n\nN'enregistre rien pour l'instant : tu risquerais d'effacer " +
+            "des ajouts faits depuis l'ordinateur. Réessaie dans un moment.");
+      return;
+    }
   }
 
   majEtatServeur();
