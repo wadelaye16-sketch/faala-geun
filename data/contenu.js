@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 31/07/2026 20:59:08
+   Dernière mise à jour : 31/07/2026 21:04:44
    ============================================================ */
 
 window.CONTENU = {
@@ -19,10 +19,16 @@ window.CONTENU = {
   "videos": [],
   "audios": [
     {
+      "titre": "GAMOU THIES 1980",
+      "artiste": "BAYE DJIBY DIOUF",
+      "categorie": "SAM FALL",
+      "fichier": "medias/audios/baye-djiby-diouf-gamou-thies-1980.mp3",
+      "affiche": "medias/images/6010171591448268027_121.jpg"
+    },
+    {
       "titre": "EL ROKHO",
       "artiste": "BAYE DJIBY DIOUF",
       "categorie": "SAM FALL",
-      "duree": "31:33",
       "fichier": "medias/audios/baye-djiby-rokho.mp3",
       "affiche": "medias/images/6010171591448268027_121.jpg"
     },
