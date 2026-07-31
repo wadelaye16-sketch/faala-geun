@@ -2,7 +2,7 @@
    Contenu de l'application Touba Média.
    Fichier produit par l'espace de gestion (admin.html).
    Tu peux le modifier à la main, mais l'interface est plus sûre.
-   Dernière mise à jour : 30/07/2026 22:41:52
+   Dernière mise à jour : 31/07/2026 20:59:08
    ============================================================ */
 
 window.CONTENU = {
@@ -18,6 +18,14 @@ window.CONTENU = {
   "textes": {},
   "videos": [],
   "audios": [
+    {
+      "titre": "EL ROKHO",
+      "artiste": "BAYE DJIBY DIOUF",
+      "categorie": "SAM FALL",
+      "duree": "31:33",
+      "fichier": "medias/audios/baye-djiby-rokho.mp3",
+      "affiche": "medias/images/6010171591448268027_121.jpg"
+    },
     {
       "titre": "nourrou darayni",
       "artiste": "serigne saliou aissy",
@@ -36,10 +44,6 @@ window.CONTENU = {
   "boutique": [],
   "evenements": [],
   "actualites": [
-    {
-      "titre": "Grand Magal de Touba",
-      "date": "2026-08-02"
-    },
     {
       "titre": "Bienvenue sur l'application de la communauté",
       "date": "2026-07-25",
